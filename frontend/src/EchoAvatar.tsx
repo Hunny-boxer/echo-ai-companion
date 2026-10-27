@@ -46,6 +46,7 @@ export default function EchoAvatar({
   );
 
   const frameStyle: CSSProperties = {
+    position: "relative",
     borderRadius: size === "chat" ? "10px" : "14px",
     background: "transparent",
     overflow: "hidden",
@@ -54,30 +55,33 @@ export default function EchoAvatar({
   const portraitStyle: CSSProperties = {
     position: "absolute",
     inset: 0,
+    zIndex: 1,
     width: "100%",
     height: "100%",
     objectFit: "cover",
     objectPosition: "center 30%",
     userSelect: "none",
     pointerEvents: "none",
-    filter:
-      state === "speaking"
-        ? `drop-shadow(0 0 13px var(--echo-avatar-glow)) brightness(${1 + safeMouthOpen * 0.12}) saturate(1.08)`
-        : "drop-shadow(0 0 13px var(--echo-avatar-glow))",
   };
 
-  const overlayStyle: CSSProperties = {
-    zIndex: 2,
+  const faceLayerStyle: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    zIndex: 5,
     pointerEvents: "none",
   };
 
-  const ringStyle: CSSProperties = {
-    zIndex: 3,
-    pointerEvents: "none",
+  const lidStyle: CSSProperties = {
+    top: "calc(var(--echo-eye-top) + var(--echo-eye-y-adjust, 0%))",
+    width: "var(--echo-eye-width)",
+    height: "var(--echo-eye-height)",
   };
 
-  const statusStyle: CSSProperties = {
-    zIndex: 4,
+  const mouthStyle: CSSProperties = {
+    left: "var(--echo-mouth-left)",
+    top: "calc(var(--echo-mouth-top) + var(--echo-mouth-y-adjust, 0%))",
+    width: "var(--echo-mouth-width)",
+    height: `${1 + safeMouthOpen * 5}%`,
   };
 
   const statusText: Record<EchoAvatarState, string> = {
@@ -110,27 +114,44 @@ export default function EchoAvatar({
 
       <div
         className="echo-avatar-halo"
-        style={overlayStyle}
         aria-hidden="true"
       />
 
       <div
         className="echo-avatar-ring echo-avatar-ring-one"
-        style={ringStyle}
         aria-hidden="true"
       />
 
       <div
         className="echo-avatar-ring echo-avatar-ring-two"
-        style={ringStyle}
         aria-hidden="true"
       />
 
       <div
         className="echo-avatar-ring echo-avatar-ring-three"
-        style={ringStyle}
         aria-hidden="true"
       />
+
+      <div
+        className="echo-avatar-face-overlay"
+        style={faceLayerStyle}
+        aria-hidden="true"
+      >
+        <span
+          className="echo-avatar-eye-lid echo-avatar-eye-lid-left"
+          style={{ ...lidStyle, left: "var(--echo-eye-left)" }}
+        />
+
+        <span
+          className="echo-avatar-eye-lid echo-avatar-eye-lid-right"
+          style={{ ...lidStyle, left: "var(--echo-eye-right)" }}
+        />
+
+        <span
+          className="echo-avatar-mouth-overlay"
+          style={mouthStyle}
+        />
+      </div>
 
       <span
         className="echo-avatar-particle echo-avatar-particle-one"
@@ -147,7 +168,7 @@ export default function EchoAvatar({
         aria-hidden="true"
       />
 
-      <div className="echo-avatar-status" style={statusStyle}>
+      <div className="echo-avatar-status">
         <span className="echo-avatar-status-dot" />
         {statusText[state]}
       </div>
