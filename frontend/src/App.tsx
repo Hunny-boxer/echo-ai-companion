@@ -1,12 +1,14 @@
 import { useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
+import { sendChatMessage } from "./chatService";
 
 const personas = [
   {
     id: "sage",
     name: "Sage",
     role: "Calm & thoughtful",
-    description: "A gentle presence for reflection and meaningful conversations.",
+    description:
+      "A gentle presence for reflection and meaningful conversations.",
     avatar: "✦",
     color: "lilac",
     traits: ["Thoughtful", "Patient", "Grounded"],
@@ -15,7 +17,8 @@ const personas = [
     id: "nova",
     name: "Nova",
     role: "Playful & curious",
-    description: "A bright, curious companion for ideas, stories, and everyday fun.",
+    description:
+      "A bright, curious companion for ideas, stories, and everyday fun.",
     avatar: "✷",
     color: "peach",
     traits: ["Curious", "Playful", "Creative"],
@@ -24,7 +27,8 @@ const personas = [
     id: "atlas",
     name: "Atlas",
     role: "Motivating & grounded",
-    description: "A supportive coach to help you focus and take the next step.",
+    description:
+      "A supportive coach to help you focus and take the next step.",
     avatar: "↗",
     color: "blue",
     traits: ["Focused", "Encouraging", "Practical"],
@@ -68,17 +72,16 @@ const starters = [
   },
 ];
 
-function getPreviewReply(personaName: string): string {
-  return `You've started a conversation with ${personaName}. This is a local preview response, not a live AI answer yet. In the next milestone, we'll connect Echo to its AI backend so it can respond meaningfully to your messages.`;
-}
-
 function App() {
   const [selectedPersonaId, setSelectedPersonaId] =
     useState<PersonaId>("sage");
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [chatError, setChatError] = useState("");
   const [activeNav, setActiveNav] = useState("chat");
+
+  // Prevent a response to an old conversation appearing in a new chat.
   const conversationVersion = useRef(0);
 
   const selectedPersona =
@@ -90,16 +93,27 @@ function App() {
     setMessages([]);
     setDraft("");
     setIsThinking(false);
+    setChatError("");
     setActiveNav("chat");
   }
 
-  function sendMessage(event?: FormEvent<HTMLFormElement>) {
+  async function sendMessage(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
 
     const text = draft.trim();
-    if (!text || isThinking) return;
+
+    if (!text || isThinking) {
+      return;
+    }
 
     const version = conversationVersion.current;
+
+    // Only send recent context to keep requests bounded.
+    const history = messages.slice(-12).map((message) => ({
+      role: message.role,
+      content: message.text,
+    }));
+
     const userMessage: Message = {
       id: `${Date.now()}-user`,
       role: "user",
@@ -110,20 +124,42 @@ function App() {
     setMessages((current) => [...current, userMessage]);
     setDraft("");
     setIsThinking(true);
+    setChatError("");
 
-    window.setTimeout(() => {
-      if (conversationVersion.current !== version) return;
+    try {
+      const replyText = await sendChatMessage({
+        message: text,
+        persona: selectedPersonaId,
+        history,
+      });
+
+      if (conversationVersion.current !== version) {
+        return;
+      }
 
       const reply: Message = {
         id: `${Date.now()}-assistant`,
         role: "assistant",
-        text: getPreviewReply(selectedPersona.name),
+        text: replyText,
         time: "Just now",
       };
 
       setMessages((current) => [...current, reply]);
-      setIsThinking(false);
-    }, 450);
+    } catch (error) {
+      if (conversationVersion.current !== version) {
+        return;
+      }
+
+      setChatError(
+        error instanceof Error
+          ? error.message
+          : "Echo couldn't reply. Please try again."
+      );
+    } finally {
+      if (conversationVersion.current === version) {
+        setIsThinking(false);
+      }
+    }
   }
 
   function handleComposerKeyDown(
@@ -131,18 +167,24 @@ function App() {
   ) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   }
 
   function chooseStarter(prompt: string) {
     setDraft(prompt);
+    setChatError("");
   }
 
   return (
     <div className="echo-app">
       <aside className="sidebar">
-        <button className="brand" onClick={startNewChat} type="button">
+        <button
+          className="brand"
+          onClick={startNewChat}
+          type="button"
+          aria-label="Echo home and new conversation"
+        >
           <span className="brand-mark">✦</span>
           <span className="brand-wordmark">
             echo<span>.</span>
@@ -161,17 +203,23 @@ function App() {
 
         <nav className="side-nav" aria-label="Main navigation">
           <button
-            className={`nav-link ${activeNav === "chat" ? "nav-link-active" : ""}`}
+            className={`nav-link ${
+              activeNav === "chat" ? "nav-link-active" : ""
+            }`}
             onClick={() => setActiveNav("chat")}
             type="button"
           >
             <span className="nav-icon">◫</span>
             <span>Conversations</span>
-            <span className="nav-count">{messages.length > 0 ? "1" : "0"}</span>
+            <span className="nav-count">
+              {messages.length > 0 ? "1" : "0"}
+            </span>
           </button>
 
           <button
-            className={`nav-link ${activeNav === "discover" ? "nav-link-active" : ""}`}
+            className={`nav-link ${
+              activeNav === "discover" ? "nav-link-active" : ""
+            }`}
             onClick={() => setActiveNav("discover")}
             type="button"
           >
@@ -181,7 +229,9 @@ function App() {
           </button>
 
           <button
-            className={`nav-link ${activeNav === "memory" ? "nav-link-active" : ""}`}
+            className={`nav-link ${
+              activeNav === "memory" ? "nav-link-active" : ""
+            }`}
             onClick={() => setActiveNav("memory")}
             type="button"
           >
@@ -195,15 +245,24 @@ function App() {
 
         <div className="sidebar-section-title">
           <span>RECENT CONVERSATIONS</span>
-          <span className="muted-number">{messages.length > 0 ? "1" : "0"}</span>
+          <span className="muted-number">
+            {messages.length > 0 ? "1" : "0"}
+          </span>
         </div>
 
         {messages.length > 0 ? (
-          <button className="recent-conversation" type="button">
+          <button
+            className="recent-conversation"
+            type="button"
+            onClick={() => setActiveNav("chat")}
+          >
             <span className="recent-indicator" />
             <span className="recent-copy">
-              <strong>{messages[0].text.slice(0, 26) || "New conversation"}</strong>
-              <small>Just now</small>
+              <strong>
+                {messages.find((message) => message.role === "user")?.text
+                  .slice(0, 26) || "New conversation"}
+              </strong>
+              <small>Current session</small>
             </span>
           </button>
         ) : (
@@ -219,7 +278,9 @@ function App() {
           <span className="privacy-icon">◈</span>
           <div>
             <strong>Your space, your rules</strong>
-            <p>Memory controls are coming soon. This preview does not save chats.</p>
+            <p>
+              Conversation history is not saved between sessions yet.
+            </p>
           </div>
         </div>
 
@@ -227,7 +288,7 @@ function App() {
           <div className="profile-avatar">Y</div>
           <div className="profile-copy">
             <strong>Your space</strong>
-            <span>Guest preview</span>
+            <span>Signed-in session</span>
           </div>
           <span className="profile-menu">···</span>
         </div>
@@ -241,20 +302,24 @@ function App() {
               <span className="breadcrumb-slash">/</span>
               <strong>Companion</strong>
             </div>
+
             <div className="preview-pill">
               <span className="preview-dot" />
-              FRONTEND PREVIEW
+              AI COMPANION
             </div>
           </div>
 
           <div className="topbar-actions">
             <span className="current-persona">
-              <span className={`mini-persona-avatar ${selectedPersona.color}`}>
+              <span
+                className={`mini-persona-avatar ${selectedPersona.color}`}
+              >
                 {selectedPersona.avatar}
               </span>
               <span>{selectedPersona.name}</span>
               <span className="chevron">⌄</span>
             </span>
+
             <button
               className="topbar-icon-button"
               type="button"
@@ -270,13 +335,13 @@ function App() {
         <div className="preview-banner">
           <span className="banner-sparkle">✦</span>
           <div>
-            <strong>Welcome to Echo's first preview</strong>
+            <strong>Your personal AI companion</strong>
             <span>
-              Explore the interface and personalities. Real AI responses and
-              account syncing are the next milestones.
+              Talk with Sage, Nova, or Atlas. Real AI replies are
+              enabled when the backend is configured.
             </span>
           </div>
-          <span className="banner-status">LOCAL ONLY</span>
+          <span className="banner-status">AI MODE</span>
         </div>
 
         <div className="content-grid">
@@ -294,14 +359,16 @@ function App() {
                 <div className="welcome-kicker">
                   A LITTLE SPACE JUST FOR YOU
                 </div>
+
                 <h1>
                   A thought on your mind?
                   <br />
                   <span>Let’s start there.</span>
                 </h1>
+
                 <p className="welcome-description">
-                  No scripts. No pressure. Just a space to think, talk, explore,
-                  and be yourself.
+                  No scripts. No pressure. Just a space to think, talk,
+                  explore, and be yourself.
                 </p>
 
                 <div className="prompt-heading">
@@ -317,7 +384,9 @@ function App() {
                       onClick={() => chooseStarter(starter.prompt)}
                       type="button"
                     >
-                      <span className="prompt-card-icon">{starter.icon}</span>
+                      <span className="prompt-card-icon">
+                        {starter.icon}
+                      </span>
                       <span className="prompt-card-copy">
                         <strong>{starter.title}</strong>
                         <small>{starter.prompt}</small>
@@ -330,54 +399,87 @@ function App() {
             ) : (
               <div className="conversation-view">
                 <div className="conversation-heading">
-                  <span className={`mini-persona-avatar ${selectedPersona.color}`}>
+                  <span
+                    className={`mini-persona-avatar ${selectedPersona.color}`}
+                  >
                     {selectedPersona.avatar}
                   </span>
                   <div>
                     <strong>You and {selectedPersona.name}</strong>
-                    <span>Local conversation preview</span>
+                    <span>AI conversation</span>
                   </div>
                 </div>
 
                 <div className="message-list" aria-live="polite">
                   {messages.map((message) => (
                     <article
-                      className={`message-row ${message.role === "user" ? "message-row-user" : ""}`}
+                      className={`message-row ${
+                        message.role === "user" ? "message-row-user" : ""
+                      }`}
                       key={message.id}
                     >
                       {message.role === "assistant" && (
-                        <div className={`message-avatar ${selectedPersona.color}`}>
+                        <div
+                          className={`message-avatar ${selectedPersona.color}`}
+                        >
                           {selectedPersona.avatar}
                         </div>
                       )}
+
                       <div className="message-content">
                         <div className="message-meta">
                           <strong>
                             {message.role === "user"
                               ? "You"
-                              : `${selectedPersona.name} · Preview`}
+                              : selectedPersona.name}
                           </strong>
                           <span>{message.time}</span>
                         </div>
-                        <div className="message-bubble">{message.text}</div>
+
+                        <div className="message-bubble">
+                          {message.text}
+                        </div>
                       </div>
+
                       {message.role === "user" && (
                         <div className="message-user-avatar">Y</div>
                       )}
                     </article>
                   ))}
 
+                  {chatError && (
+                    <p
+                      role="alert"
+                      style={{
+                        color: "#ffb3c0",
+                        fontSize: "12px",
+                        lineHeight: 1.6,
+                        padding: "8px 12px",
+                      }}
+                    >
+                      {chatError}
+                    </p>
+                  )}
+
                   {isThinking && (
                     <div className="message-row">
-                      <div className={`message-avatar ${selectedPersona.color}`}>
+                      <div
+                        className={`message-avatar ${selectedPersona.color}`}
+                      >
                         {selectedPersona.avatar}
                       </div>
+
                       <div className="message-content">
                         <div className="message-meta">
-                          <strong>{selectedPersona.name} · Preview</strong>
+                          <strong>{selectedPersona.name}</strong>
                           <span>Thinking</span>
                         </div>
-                        <div className="typing-bubble" aria-label="Loading preview">
+
+                        <div
+                          className="typing-bubble"
+                          aria-label="Echo is thinking"
+                          role="status"
+                        >
                           <span />
                           <span />
                           <span />
@@ -392,6 +494,7 @@ function App() {
             <div className="composer-wrap">
               <form className="composer" onSubmit={sendMessage}>
                 <span className="composer-plus">＋</span>
+
                 <input
                   aria-label="Message Echo"
                   className="composer-input"
@@ -400,7 +503,10 @@ function App() {
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={handleComposerKeyDown}
                   placeholder={`Share what's on your mind with ${selectedPersona.name}...`}
+                  disabled={isThinking}
+                  maxLength={4000}
                 />
+
                 <button
                   className="composer-send"
                   disabled={!draft.trim() || isThinking}
@@ -411,10 +517,13 @@ function App() {
                   ↑
                 </button>
               </form>
+
               <div className="composer-footnote">
                 <span>↵ Enter to send</span>
                 <span className="footnote-divider">·</span>
-                <span>Preview messages aren't saved or sent to an AI service.</span>
+                <span>
+                  Messages are sent to the AI service and are not saved yet.
+                </span>
               </div>
             </div>
           </section>
@@ -428,17 +537,21 @@ function App() {
               <span className="panel-star">✧</span>
             </div>
 
-            <div className={`companion-feature companion-${selectedPersona.color}`}>
+            <div
+              className={`companion-feature companion-${selectedPersona.color}`}
+            >
               <div className="feature-orbit feature-orbit-one" />
               <div className="feature-orbit feature-orbit-two" />
               <div className="feature-avatar">{selectedPersona.avatar}</div>
+
               <div className="feature-copy">
                 <span className="feature-label">YOUR COMPANION</span>
                 <h3>{selectedPersona.name}</h3>
                 <p>{selectedPersona.role}</p>
               </div>
+
               <span className="feature-status">
-                <span /> Preview
+                <span /> AI companion
               </span>
             </div>
 
@@ -450,19 +563,28 @@ function App() {
             <div className="persona-list">
               {personas.map((persona) => (
                 <button
-                  className={`persona-option ${selectedPersonaId === persona.id ? "persona-selected" : ""}`}
+                  className={`persona-option ${
+                    selectedPersonaId === persona.id
+                      ? "persona-selected"
+                      : ""
+                  }`}
                   key={persona.id}
-                  onClick={() => setSelectedPersonaId(persona.id)}
+                  onClick={() => {
+                    setSelectedPersonaId(persona.id);
+                    setChatError("");
+                  }}
                   type="button"
                   aria-pressed={selectedPersonaId === persona.id}
                 >
                   <span className={`persona-avatar ${persona.color}`}>
                     {persona.avatar}
                   </span>
+
                   <span className="persona-info">
                     <strong>{persona.name}</strong>
                     <small>{persona.role}</small>
                   </span>
+
                   <span className="persona-check">
                     {selectedPersonaId === persona.id ? "✓" : ""}
                   </span>
@@ -471,8 +593,12 @@ function App() {
             </div>
 
             <div className="personality-details">
-              <span className="personality-details-heading">A LITTLE ABOUT {selectedPersona.name.toUpperCase()}</span>
+              <span className="personality-details-heading">
+                A LITTLE ABOUT {selectedPersona.name.toUpperCase()}
+              </span>
+
               <p>{selectedPersona.description}</p>
+
               <div className="trait-list">
                 {selectedPersona.traits.map((trait) => (
                   <span key={trait}>{trait}</span>
@@ -482,10 +608,13 @@ function App() {
 
             <div className="memory-card">
               <div className="memory-card-icon">⌘</div>
+
               <div className="memory-card-copy">
                 <strong>Memory, your way</strong>
-                <p>Choose what Echo remembers and delete it whenever you like.</p>
-                <span>COMING IN A LATER MILESTONE</span>
+                <p>
+                  Choose what Echo remembers and delete it whenever you like.
+                </p>
+                <span>PERSONAL MEMORY IS COMING NEXT</span>
               </div>
             </div>
 
