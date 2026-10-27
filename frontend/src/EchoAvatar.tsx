@@ -1,4 +1,6 @@
+
 import { useId } from "react";
+import type { CSSProperties } from "react";
 import "./echo-avatar.css";
 
 export type EchoAvatarState =
@@ -9,11 +11,20 @@ export type EchoAvatarState =
 
 export type EchoPersona = "sage" | "nova" | "atlas";
 
+export type EchoAvatarExpression =
+  | "neutral"
+  | "warm"
+  | "curious"
+  | "focused"
+  | "concerned";
+
 type EchoAvatarProps = {
   state?: EchoAvatarState;
   size?: "hero" | "panel" | "chat";
   persona?: EchoPersona;
   label?: string;
+  expression?: EchoAvatarExpression;
+  mouthOpen?: number;
 };
 
 const palettes = {
@@ -81,10 +92,17 @@ export default function EchoAvatar({
   size = "panel",
   persona = "sage",
   label = "Echo AI assistant",
+  expression = "neutral",
+  mouthOpen = 0.35,
 }: EchoAvatarProps) {
   const rawId = useId();
   const id = rawId.replace(/:/g, "");
   const colors = palettes[persona];
+
+  const safeMouthOpen = Math.max(
+    0,
+    Math.min(1, Number.isFinite(mouthOpen) ? mouthOpen : 0)
+  );
 
   return (
     <div
@@ -93,9 +111,10 @@ export default function EchoAvatar({
         `echo-avatar-${size}`,
         `echo-avatar-persona-${persona}`,
         `echo-avatar-state-${state}`,
+        `echo-avatar-expression-${expression}`,
       ].join(" ")}
       role="img"
-      aria-label={`${label}, ${persona}, ${state}`}
+      aria-label={`${label}, ${persona}, ${state}, ${expression} expression`}
     >
       <div className="echo-avatar-halo" />
       <div className="echo-avatar-ring echo-avatar-ring-one" />
@@ -176,7 +195,7 @@ export default function EchoAvatar({
           </filter>
         </defs>
 
-        {/* NOVA: warm, playful android hair silhouette */}
+        {/* NOVA: preserve the original warm android hairstyle. */}
         {persona === "nova" && (
           <g className="echo-avatar-hair">
             <path
@@ -241,7 +260,7 @@ export default function EchoAvatar({
           </g>
         )}
 
-        {/* ATLAS: angular armored helmet and side modules */}
+        {/* ATLAS: preserve the original angular helmet. */}
         {persona === "atlas" && (
           <g className="echo-avatar-helmet">
             <path
@@ -288,7 +307,7 @@ export default function EchoAvatar({
           </g>
         )}
 
-        {/* SAGE: serene monk-inspired crown knot */}
+        {/* SAGE: preserve the monk-inspired crown knot. */}
         {persona === "sage" && (
           <g className="echo-avatar-knot">
             <ellipse
@@ -320,7 +339,7 @@ export default function EchoAvatar({
           </g>
         )}
 
-        {/* Shared upper body, styled by each persona palette */}
+        {/* Shared body, with each persona's original styling. */}
         <g className="echo-avatar-body">
           <path
             d="M35 258
@@ -365,6 +384,7 @@ export default function EchoAvatar({
                 stroke="#e2c7ff"
                 strokeWidth="4"
               />
+
               {Array.from({ length: 7 }, (_, index) => {
                 const angle = (Math.PI * index) / 6;
                 const x = 120 + Math.sin(angle) * 25;
@@ -434,7 +454,7 @@ export default function EchoAvatar({
           )}
         </g>
 
-        {/* Head side housings */}
+        {/* Head side housings. */}
         {persona !== "nova" && (
           <g>
             <path
@@ -461,157 +481,226 @@ export default function EchoAvatar({
           </g>
         )}
 
-        {/* Main head shell */}
-        <path
-          d={
-            persona === "atlas"
-              ? "M77 46 L94 33 L146 33 L163 46 L174 88 L172 128 Q165 166 120 183 Q75 166 68 128 L66 88Z"
-              : "M77 48 Q120 14 163 48 L174 89 L172 128 Q165 166 120 183 Q75 166 68 128 L66 89Z"
-          }
-          fill={`url(#${id}-face)`}
-          stroke={colors.outline}
-          strokeWidth="2"
-        />
-
-        {/* Nova's signature fringe over the forehead */}
-        {persona === "nova" && (
+        {/* Main head shell. */}
+        <g
+          className="echo-avatar-head"
+          style={{
+            transformBox: "view-box",
+            transformOrigin: "center 110px",
+          } as CSSProperties}
+        >
           <path
-            d="M76 61
-               Q87 29 119 39
-               Q142 30 163 58
-               L153 70
-               Q139 52 126 54
-               Q103 53 89 76Z"
-            fill={`url(#${id}-hair)`}
+            d={
+              persona === "atlas"
+                ? "M77 46 L94 33 L146 33 L163 46 L174 88 L172 128 Q165 166 120 183 Q75 166 68 128 L66 88Z"
+                : "M77 48 Q120 14 163 48 L174 89 L172 128 Q165 166 120 183 Q75 166 68 128 L66 89Z"
+            }
+            fill={`url(#${id}-face)`}
             stroke={colors.outline}
-            strokeWidth="1.4"
+            strokeWidth="2"
           />
-        )}
 
-        {/* Brow and face panels */}
-        <path
-          d="M82 78 Q120 63 162 78
-             L159 119 Q153 145 120 160
-             Q87 145 81 119Z"
-          fill={`url(#${id}-visor)`}
-          stroke={colors.accent}
-          strokeWidth="1.6"
-        />
+          {/* Nova's signature fringe. */}
+          {persona === "nova" && (
+            <path
+              d="M76 61
+                 Q87 29 119 39
+                 Q142 30 163 58
+                 L153 70
+                 Q139 52 126 54
+                 Q103 53 89 76Z"
+              fill={`url(#${id}-hair)`}
+              stroke={colors.outline}
+              strokeWidth="1.4"
+            />
+          )}
 
-        {persona === "sage" && (
+          {/* Face visor. */}
           <path
-            d="M120 79 L126 91 L120 103 L114 91Z"
-            fill={`url(#${id}-eye)`}
-            filter={`url(#${id}-glow)`}
-          />
-        )}
-
-        {persona === "atlas" && (
-          <path
-            d="M89 83 L108 78 M132 78 L151 83"
+            d="M82 78 Q120 63 162 78
+               L159 119 Q153 145 120 160
+               Q87 145 81 119Z"
+            fill={`url(#${id}-visor)`}
             stroke={colors.accent}
-            strokeWidth="3"
-            strokeLinecap="square"
-          />
-        )}
-
-        {persona === "nova" && (
-          <path
-            d="M88 86 Q99 79 109 86
-               M131 86 Q141 79 152 86"
-            fill="none"
-            stroke={colors.accent}
-            strokeWidth="2.2"
-            strokeLinecap="round"
-          />
-        )}
-
-        {/* Luminous android eyes */}
-        <g className="echo-avatar-eyes">
-          <ellipse
-            cx="99"
-            cy="105"
-            rx={persona === "atlas" ? 13 : 12}
-            ry={persona === "nova" ? 8 : 7}
-            fill={`url(#${id}-eye)`}
-            filter={`url(#${id}-glow)`}
+            strokeWidth="1.6"
           />
 
-          <ellipse
-            cx="141"
-            cy="105"
-            rx={persona === "atlas" ? 13 : 12}
-            ry={persona === "nova" ? 8 : 7}
-            fill={`url(#${id}-eye)`}
-            filter={`url(#${id}-glow)`}
-          />
-
-          <circle cx="99" cy="105" r="2.5" fill="#ffffff" />
-          <circle cx="141" cy="105" r="2.5" fill="#ffffff" />
-        </g>
-
-        {/* Nose and cheek details */}
-        <path
-          d="M83 117 L91 133 L101 137
-             M157 117 L149 133 L139 137"
-          fill="none"
-          stroke={colors.accent}
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-
-        <path
-          d="M120 104 L115 121 L120 124 L125 121"
-          fill="none"
-          stroke={colors.outline}
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Each character has its own expression */}
-        <g className="echo-avatar-mouth">
           {persona === "sage" && (
             <path
-              d="M104 140 Q120 146 136 140"
-              fill="none"
-              stroke={colors.outline}
-              strokeWidth="2.5"
-              strokeLinecap="round"
+              d="M120 79 L126 91 L120 103 L114 91Z"
+              fill={`url(#${id}-eye)`}
+              filter={`url(#${id}-glow)`}
+            />
+          )}
+
+          {persona === "atlas" && (
+            <path
+              d="M89 83 L108 78 M132 78 L151 83"
+              stroke={colors.accent}
+              strokeWidth="3"
+              strokeLinecap="square"
             />
           )}
 
           {persona === "nova" && (
-            <>
+            <path
+              d="M88 86 Q99 79 109 86
+                 M131 86 Q141 79 152 86"
+              fill="none"
+              stroke={colors.accent}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          )}
+
+          {/* Luminous eyes. Original character proportions are retained. */}
+          <g className="echo-avatar-eyes">
+            <ellipse
+              cx="99"
+              cy="105"
+              rx={persona === "atlas" ? 13 : 12}
+              ry={
+                expression === "concerned"
+                  ? 5.5
+                  : expression === "curious"
+                    ? persona === "nova" ? 9 : 8
+                    : persona === "nova" ? 8 : 7
+              }
+              fill={`url(#${id}-eye)`}
+              filter={`url(#${id}-glow)`}
+            />
+
+            <ellipse
+              cx="141"
+              cy="105"
+              rx={persona === "atlas" ? 13 : 12}
+              ry={
+                expression === "concerned"
+                  ? 5.5
+                  : expression === "curious"
+                    ? persona === "nova" ? 9 : 8
+                    : persona === "nova" ? 8 : 7
+              }
+              fill={`url(#${id}-eye)`}
+              filter={`url(#${id}-glow)`}
+            />
+
+            <circle cx="99" cy="105" r="2.5" fill="#ffffff" />
+            <circle cx="141" cy="105" r="2.5" fill="#ffffff" />
+          </g>
+
+          {/* Nose and cheek details. */}
+          <path
+            d="M83 117 L91 133 L101 137
+               M157 117 L149 133 L139 137"
+            fill="none"
+            stroke={colors.accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+
+          <path
+            d="M120 104 L115 121 L120 124 L125 121"
+            fill="none"
+            stroke={colors.outline}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/*
+            Expression-aware mouth:
+            idle uses each persona's original mouth;
+            other expressions change the mouth curve;
+            speaking uses a mouth that responds to mouthOpen.
+          */}
+          <g className="echo-avatar-mouth">
+            {state === "speaking" ? (
+              <ellipse
+                className="echo-avatar-speaking-mouth"
+                cx="120"
+                cy="142"
+                rx={7 + safeMouthOpen * 3}
+                ry={2 + safeMouthOpen * 9}
+                fill={colors.visorEnd}
+                stroke={colors.outline}
+                strokeWidth="2"
+                style={
+                  {
+                    "--echo-mouth-open": String(safeMouthOpen),
+                  } as CSSProperties
+                }
+              />
+            ) : expression === "warm" ? (
               <path
-                d="M101 137 Q120 153 139 137"
+                d="M101 137 Q120 155 139 137"
                 fill="none"
                 stroke={colors.outline}
                 strokeWidth="2.8"
                 strokeLinecap="round"
               />
+            ) : expression === "curious" ? (
               <path
-                d="M109 143 Q120 148 131 143"
+                d="M109 142 Q120 133 131 142"
                 fill="none"
-                stroke={colors.accent}
-                strokeWidth="2"
+                stroke={colors.outline}
+                strokeWidth="2.7"
                 strokeLinecap="round"
               />
-            </>
-          )}
-
-          {persona === "atlas" && (
-            <path
-              d="M108 140 L132 140"
-              fill="none"
-              stroke={colors.outline}
-              strokeWidth="2.8"
-              strokeLinecap="square"
-            />
-          )}
+            ) : expression === "concerned" ? (
+              <path
+                d="M103 147 Q120 135 137 147"
+                fill="none"
+                stroke={colors.outline}
+                strokeWidth="2.7"
+                strokeLinecap="round"
+              />
+            ) : expression === "focused" ? (
+              <path
+                d="M108 141 L132 141"
+                fill="none"
+                stroke={colors.outline}
+                strokeWidth="2.8"
+                strokeLinecap="square"
+              />
+            ) : persona === "sage" ? (
+              <path
+                d="M104 140 Q120 146 136 140"
+                fill="none"
+                stroke={colors.outline}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            ) : persona === "nova" ? (
+              <>
+                <path
+                  d="M101 137 Q120 153 139 137"
+                  fill="none"
+                  stroke={colors.outline}
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M109 143 Q120 148 131 143"
+                  fill="none"
+                  stroke={colors.accent}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </>
+            ) : (
+              <path
+                d="M108 140 L132 140"
+                fill="none"
+                stroke={colors.outline}
+                strokeWidth="2.8"
+                strokeLinecap="square"
+              />
+            )}
+          </g>
         </g>
 
-        {/* Sage's hands joined in a calm, meditative gesture */}
+        {/* Sage's original joined-hands meditation pose. */}
         {persona === "sage" && (
           <g
             className="echo-avatar-prayer-hands"
@@ -647,7 +736,7 @@ export default function EchoAvatar({
           </g>
         )}
 
-        {/* Small shoulder lights */}
+        {/* Small shoulder lights. */}
         <circle
           cx="76"
           cy="153"

@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 :root {
@@ -694,6 +695,7 @@ input:focus:not(:focus-visible) {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -725,6 +727,7 @@ input:focus:not(:focus-visible) {
   100% {
     filter: brightness(0.96);
   }
+
   50% {
     filter: brightness(1.18);
   }
@@ -1096,6 +1099,7 @@ input:focus:not(:focus-visible) {
     opacity: 0.4;
     transform: translateY(0);
   }
+
   30% {
     opacity: 1;
     transform: translateY(-4px);
@@ -1154,6 +1158,69 @@ input:focus:not(:focus-visible) {
 
 .composer-input:focus {
   outline: none;
+}
+
+/* Voice reply and microphone controls */
+
+.composer-audio-toggle,
+.composer-mic {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(192, 172, 255, 0.2);
+  border-radius: 10px;
+  color: #b9abd6;
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.composer-audio-toggle:hover,
+.composer-mic:hover {
+  transform: translateY(-1px);
+  border-color: rgba(192, 172, 255, 0.48);
+  color: #fff;
+  background: rgba(182, 160, 255, 0.12);
+}
+
+.composer-audio-toggle-active {
+  border-color: rgba(182, 160, 255, 0.4);
+  color: #e2d6ff;
+  background: rgba(149, 119, 233, 0.15);
+  box-shadow: inset 0 0 12px rgba(149, 119, 233, 0.06);
+}
+
+.composer-mic-active {
+  border-color: rgba(99, 217, 255, 0.65);
+  color: #fff;
+  background: linear-gradient(145deg, #498eb3, #4d4f9e);
+  box-shadow: 0 0 14px rgba(99, 201, 255, 0.18);
+  animation: echo-mic-pulse 1.6s ease-in-out infinite;
+}
+
+.composer-audio-toggle:focus-visible,
+.composer-mic:focus-visible {
+  outline: 2px solid #b6a0ff;
+  outline-offset: 3px;
+}
+
+@keyframes echo-mic-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(99, 201, 255, 0.12);
+  }
+
+  50% {
+    box-shadow: 0 0 18px rgba(99, 201, 255, 0.35);
+  }
 }
 
 .composer-send {
@@ -1936,9 +2003,13 @@ button {
 
   .composer {
     min-height: 53px;
-    gap: 8px;
-    padding-left: 11px;
+    gap: 6px;
+    padding: 7px 7px 7px 10px;
     border-radius: 13px;
+  }
+
+  .composer-plus {
+    font-size: 18px;
   }
 
   .composer-input {
@@ -1947,6 +2018,14 @@ button {
 
   .composer-input::placeholder {
     font-size: 10px;
+  }
+
+  .composer-audio-toggle,
+  .composer-mic {
+    flex-basis: 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
   }
 
   .composer-send {
@@ -2054,5 +2133,24 @@ button {
 
   .prompt-card-copy small {
     font-size: 8px;
+  }
+
+  .composer {
+    gap: 4px;
+    padding-right: 5px;
+    padding-left: 7px;
+  }
+
+  .composer-audio-toggle,
+  .composer-mic {
+    flex-basis: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .composer-send {
+    flex-basis: 31px;
+    width: 31px;
+    height: 31px;
   }
 }

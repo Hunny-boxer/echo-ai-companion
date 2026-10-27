@@ -1,6 +1,9 @@
+
 .echo-avatar {
   --echo-avatar-glow: rgba(151, 119, 255, 0.42);
   --echo-avatar-line: rgba(191, 168, 255, 0.6);
+  --echo-avatar-accent: #b79aff;
+  --echo-avatar-background: #120b21;
 
   position: relative;
   display: grid;
@@ -11,11 +14,110 @@
   border-radius: 50%;
   background:
     radial-gradient(
-      circle at 50% 45%,
-      rgba(127, 95, 210, 0.2),
-      rgba(19, 15, 33, 0.3) 55%,
-      transparent 72%
+      circle at 50% 40%,
+      var(--echo-avatar-glow),
+      transparent 53%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      #231738 0%,
+      var(--echo-avatar-background) 74%
     );
+  transition:
+    background 500ms ease,
+    box-shadow 500ms ease;
+}
+
+/* Character-specific palettes */
+
+.echo-avatar-persona-sage {
+  --echo-avatar-glow: rgba(157, 116, 255, 0.34);
+  --echo-avatar-line: rgba(219, 193, 255, 0.55);
+  --echo-avatar-accent: #d9bd83;
+  --echo-avatar-background: #120b21;
+  background:
+    radial-gradient(
+      ellipse at 50% 37%,
+      rgba(183, 145, 255, 0.34),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse at 50% 100%,
+      rgba(193, 154, 91, 0.12),
+      transparent 53%
+    ),
+    linear-gradient(155deg, #24183b, #100b1c 76%);
+}
+
+.echo-avatar-persona-nova {
+  --echo-avatar-glow: rgba(255, 139, 72, 0.38);
+  --echo-avatar-line: rgba(255, 186, 130, 0.61);
+  --echo-avatar-accent: #ffb66f;
+  --echo-avatar-background: #21100e;
+  background:
+    radial-gradient(
+      ellipse at 50% 36%,
+      rgba(255, 144, 78, 0.34),
+      transparent 54%
+    ),
+    radial-gradient(
+      ellipse at 100% 100%,
+      rgba(255, 91, 50, 0.13),
+      transparent 53%
+    ),
+    linear-gradient(155deg, #39201d, #170c12 76%);
+}
+
+.echo-avatar-persona-atlas {
+  --echo-avatar-glow: rgba(67, 165, 255, 0.38);
+  --echo-avatar-line: rgba(139, 204, 255, 0.63);
+  --echo-avatar-accent: #72d2ff;
+  --echo-avatar-background: #08182b;
+  background:
+    radial-gradient(
+      ellipse at 50% 36%,
+      rgba(79, 166, 255, 0.33),
+      transparent 54%
+    ),
+    radial-gradient(
+      ellipse at 0% 100%,
+      rgba(53, 117, 225, 0.16),
+      transparent 54%
+    ),
+    linear-gradient(155deg, #172b49, #08111f 76%);
+}
+
+/* Animated ambient background */
+
+.echo-avatar::before {
+  position: absolute;
+  z-index: -2;
+  inset: -25%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--echo-avatar-glow) 65deg,
+    transparent 135deg,
+    var(--echo-avatar-line) 210deg,
+    transparent 290deg,
+    var(--echo-avatar-glow) 345deg,
+    transparent 360deg
+  );
+  opacity: 0.42;
+  content: "";
+  animation: echo-avatar-background-drift 24s linear infinite;
+}
+
+.echo-avatar::after {
+  position: absolute;
+  z-index: -1;
+  inset: 5%;
+  border: 1px solid var(--echo-avatar-line);
+  border-radius: 50%;
+  opacity: 0.12;
+  content: "";
+  animation: echo-avatar-background-breathe 5s ease-in-out infinite;
 }
 
 .echo-avatar-hero {
@@ -34,10 +136,17 @@
   border-radius: 14px;
 }
 
+.echo-avatar-chat::before,
+.echo-avatar-chat::after {
+  display: none;
+}
+
+/* Ambient halo and orbital rings */
+
 .echo-avatar-halo {
   position: absolute;
-  inset: 12%;
   z-index: -1;
+  inset: 12%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -51,7 +160,7 @@
 
 .echo-avatar-ring {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   border: 1px solid var(--echo-avatar-line);
   border-radius: 50%;
@@ -69,25 +178,30 @@
   inset: 19%;
   border-left-color: transparent;
   border-top-color: transparent;
-  border-bottom-color: rgba(170, 149, 255, 0.7);
+  border-bottom-color: var(--echo-avatar-accent);
   animation: echo-avatar-spin-reverse 13s linear infinite;
 }
 
 .echo-avatar-ring-three {
   inset: 7%;
   border-style: dashed;
-  border-color: rgba(139, 114, 226, 0.24);
+  border-color: var(--echo-avatar-line);
+  opacity: 0.25;
   animation: echo-avatar-spin 40s linear infinite;
 }
 
+/* Character artwork */
+
 .echo-avatar-art {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 88%;
   height: 95%;
   overflow: visible;
   transform-origin: 50% 58%;
   animation: echo-avatar-float 5s ease-in-out infinite;
-  filter: drop-shadow(0 0 13px rgba(130, 95, 237, 0.2));
+  filter: drop-shadow(0 0 13px var(--echo-avatar-glow));
 }
 
 .echo-avatar-chat .echo-avatar-art {
@@ -100,28 +214,46 @@
   animation: echo-avatar-body-glow 4s ease-in-out infinite;
 }
 
+/* Subtle independent head movement */
+
+.echo-avatar-head {
+  transform-box: view-box;
+  transform-origin: 50% 110px;
+  animation: echo-avatar-head-idle 7s ease-in-out infinite;
+}
+
 .echo-avatar-eyes {
+  transform-box: view-box;
   transform-origin: 50% 105px;
   animation: echo-avatar-eye-blink 6s infinite;
 }
 
 .echo-avatar-mouth {
+  transform-box: view-box;
   transform-origin: 50% 142px;
 }
+
+/* Speaking animation */
 
 .echo-avatar-state-speaking .echo-avatar-mouth {
   animation: echo-avatar-mouth-move 240ms ease-in-out infinite alternate;
 }
 
-.echo-avatar-state-thinking .echo-avatar-art {
-  animation-duration: 2.7s;
-  filter: drop-shadow(0 0 20px rgba(175, 143, 255, 0.52));
+.echo-avatar-state-speaking .echo-avatar-art {
+  animation-duration: 2.5s;
 }
 
-.echo-avatar-state-thinking .echo-avatar-ring-one,
-.echo-avatar-state-thinking .echo-avatar-ring-three {
-  animation-duration: 4s;
+.echo-avatar-state-speaking .echo-avatar-halo {
+  opacity: 1;
+  animation-duration: 0.9s;
 }
+
+.echo-avatar-state-speaking .echo-avatar-ring-one,
+.echo-avatar-state-speaking .echo-avatar-ring-two {
+  animation-duration: 5s;
+}
+
+/* Listening state */
 
 .echo-avatar-state-listening .echo-avatar-halo {
   background: radial-gradient(
@@ -130,6 +262,7 @@
     rgba(114, 103, 240, 0.18) 50%,
     transparent 72%
   );
+  animation-duration: 1.4s;
 }
 
 .echo-avatar-state-listening .echo-avatar-ring {
@@ -137,13 +270,82 @@
   animation-duration: 5s;
 }
 
+.echo-avatar-state-listening .echo-avatar-head {
+  animation-duration: 3.5s;
+}
+
+.echo-avatar-state-listening .echo-avatar-particle {
+  background: #8ce8ff;
+  box-shadow: 0 0 12px rgba(99, 217, 255, 0.95);
+}
+
+/* Thinking state */
+
+.echo-avatar-state-thinking .echo-avatar-art {
+  animation-duration: 2.7s;
+  filter: drop-shadow(0 0 20px var(--echo-avatar-glow));
+}
+
+.echo-avatar-state-thinking .echo-avatar-ring-one,
+.echo-avatar-state-thinking .echo-avatar-ring-three {
+  animation-duration: 4s;
+}
+
+.echo-avatar-state-thinking .echo-avatar-halo {
+  animation-duration: 1.8s;
+}
+
+/* Expression states */
+
+.echo-avatar-expression-neutral .echo-avatar-head {
+  animation-duration: 7s;
+}
+
+.echo-avatar-expression-warm .echo-avatar-head {
+  animation-duration: 5s;
+}
+
+.echo-avatar-expression-warm .echo-avatar-halo {
+  opacity: 0.9;
+}
+
+.echo-avatar-expression-curious .echo-avatar-head {
+  animation-name: echo-avatar-head-curious;
+  animation-duration: 3.6s;
+}
+
+.echo-avatar-expression-curious .echo-avatar-halo {
+  opacity: 0.95;
+}
+
+.echo-avatar-expression-focused .echo-avatar-head {
+  animation-name: echo-avatar-head-focused;
+  animation-duration: 4.5s;
+}
+
+.echo-avatar-expression-focused .echo-avatar-halo {
+  animation-duration: 2.5s;
+}
+
+.echo-avatar-expression-concerned .echo-avatar-head {
+  animation-name: echo-avatar-head-concerned;
+  animation-duration: 5s;
+}
+
+.echo-avatar-expression-concerned .echo-avatar-halo {
+  opacity: 0.75;
+}
+
+/* Floating energy particles */
+
 .echo-avatar-particle {
   position: absolute;
+  z-index: 2;
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #d7c8ff;
-  box-shadow: 0 0 10px rgba(185, 156, 255, 0.95);
+  background: var(--echo-avatar-accent);
+  box-shadow: 0 0 10px var(--echo-avatar-glow);
   pointer-events: none;
 }
 
@@ -169,8 +371,11 @@
   animation: echo-avatar-particle-float 5s ease-in-out infinite;
 }
 
+/* Status badge */
+
 .echo-avatar-status {
   position: absolute;
+  z-index: 4;
   bottom: 2%;
   left: 50%;
   display: flex;
@@ -178,10 +383,10 @@
   gap: 5px;
   padding: 4px 8px;
   transform: translateX(-50%);
-  border: 1px solid rgba(183, 157, 255, 0.22);
+  border: 1px solid var(--echo-avatar-line);
   border-radius: 999px;
   background: rgba(18, 14, 31, 0.86);
-  color: #c6b7f2;
+  color: #d8c9ff;
   font-family: "DM Sans", sans-serif;
   font-size: 9px;
   font-weight: 650;
@@ -196,9 +401,10 @@
 .echo-avatar-status-dot {
   width: 5px;
   height: 5px;
+  flex: 0 0 5px;
   border-radius: 50%;
-  background: #a990ff;
-  box-shadow: 0 0 7px rgba(169, 144, 255, 0.85);
+  background: var(--echo-avatar-accent);
+  box-shadow: 0 0 7px var(--echo-avatar-glow);
 }
 
 .echo-avatar-state-listening .echo-avatar-status-dot {
@@ -217,6 +423,36 @@
   animation: echo-avatar-status-pulse 0.35s ease-in-out infinite;
 }
 
+/* Character-specific atmosphere */
+
+.echo-avatar-persona-sage .echo-avatar-ring-two {
+  border-bottom-color: #e8ce93;
+}
+
+.echo-avatar-persona-sage .echo-avatar-particle {
+  box-shadow:
+    0 0 8px rgba(193, 164, 255, 0.8),
+    0 0 16px rgba(226, 199, 138, 0.2);
+}
+
+.echo-avatar-persona-nova .echo-avatar-ring-two {
+  border-bottom-color: #ffbd82;
+}
+
+.echo-avatar-persona-nova .echo-avatar-halo {
+  filter: blur(12px);
+}
+
+.echo-avatar-persona-atlas .echo-avatar-ring-two {
+  border-bottom-color: #7bdcff;
+}
+
+.echo-avatar-persona-atlas .echo-avatar-particle {
+  box-shadow: 0 0 10px rgba(99, 201, 255, 0.85);
+}
+
+/* Avatar animations */
+
 @keyframes echo-avatar-spin {
   to {
     transform: rotate(360deg);
@@ -229,6 +465,25 @@
   }
 }
 
+@keyframes echo-avatar-background-drift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes echo-avatar-background-breathe {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.24;
+    transform: scale(1.04);
+  }
+}
+
 @keyframes echo-avatar-float {
   0%,
   100% {
@@ -237,6 +492,54 @@
 
   50% {
     transform: translateY(-4px);
+  }
+}
+
+@keyframes echo-avatar-head-idle {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  35% {
+    transform: rotate(-0.6deg) translateY(-1px);
+  }
+
+  70% {
+    transform: rotate(0.6deg) translateY(0);
+  }
+}
+
+@keyframes echo-avatar-head-curious {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(-2deg) translateY(-1px);
+  }
+}
+
+@keyframes echo-avatar-head-focused {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(0.7deg) translateY(1px);
+  }
+}
+
+@keyframes echo-avatar-head-concerned {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(1deg) translateY(1px);
   }
 }
 
@@ -315,7 +618,8 @@
   }
 }
 
-/* Larger, portrait-style character in the companion panel. */
+/* Larger portrait-style avatar in the companion panel */
+
 .companion-panel .companion-feature {
   min-height: 260px;
 }
@@ -364,6 +668,8 @@
   z-index: 3;
 }
 
+/* Responsive layout */
+
 @media (max-width: 700px) {
   .companion-panel .companion-feature {
     min-height: 230px;
@@ -376,6 +682,8 @@
     height: 164px;
   }
 }
+
+/* Accessibility */
 
 @media (prefers-reduced-motion: reduce) {
   .echo-avatar *,
