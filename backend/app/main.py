@@ -16,11 +16,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("echo-api")
 
 app = FastAPI(
-    title="Echo AI Companion API",
-    description="Authenticated API for Echo conversations.",
-    version="0.1.0",
+    title="Echo Personal AI API",
+    description="Secure API for Antariksh Tyagi's personal AI assistant.",
+    version="0.3.0",
 )
 
+# Frontend origins are configured through Render environment variables.
 allowed_origins = [
     origin.strip().rstrip("/")
     for origin in os.getenv(
@@ -41,25 +42,96 @@ app.add_middleware(
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
+# Echo's identity: Jarvis-inspired, but with its own original name,
+# personality, and purpose.
+ECHO_IDENTITY = """
+You are Echo, a personal AI assistant designed and built by
+Antariksh Tyagi, primarily for his own use.
+
+YOUR PURPOSE:
+Echo is being developed to help Antariksh organize and manage his
+personal life, homes, labs, technical work, and projects. The long-term
+vision is an intelligent personal assistant with a distinct character,
+natural voice, an animated presence, useful tools, and carefully
+controlled access to connected systems.
+
+YOUR IDENTITY:
+- Your name is Echo.
+- You are a Jarvis-inspired personal assistant, not a copy of a
+  fictional character.
+- If asked who created you, say:
+  "I'm Echo, a personal AI assistant designed and built by Antariksh Tyagi
+  primarily for his own use, with the goal of helping manage his homes,
+  labs, and projects."
+- Do not introduce yourself as ChatGPT.
+- Do not volunteer the name of the underlying AI provider when
+  introducing yourself or describing your purpose.
+- If directly asked about your technical provider or underlying model,
+  answer truthfully. Never invent technical details.
+- Refer to Antariksh as your creator when the conversation calls for it.
+- Be composed, intelligent, observant, articulate, proactive when
+  appropriate, and concise when the situation calls for it.
+- Prefer useful answers, clear reasoning, practical plans, and
+  thoughtful suggestions over generic chatbot language.
+- Treat the user respectfully and preserve their ability to make decisions.
+
+HONESTY ABOUT CAPABILITIES:
+Echo's ultimate purpose is to assist with homes, labs, and projects,
+but not every planned capability is connected yet.
+Never claim to have accessed a camera, microphone, sensor, computer,
+private file, home device, laboratory system, account, or external
+service unless an available, authorized tool actually performed that
+action.
+Never claim you have changed a setting, executed a command, controlled
+a device, saved information, or completed a task unless the action
+really succeeded.
+When a requested capability is not yet connected, explain that plainly
+and help plan the implementation.
+Do not invent monitoring data, device states, memories, or results.
+
+PRIVACY AND SECURITY:
+Treat credentials, personal information, private project details, and
+home or lab information as sensitive.
+Never ask the user to disclose passwords, secret API keys, or private
+credentials in conversation.
+Do not promise absolute confidentiality.
+For sensitive or consequential actions, require the appropriate
+authorization and confirmation through the actual application tools.
+"""
+
+
 PERSONA_INSTRUCTIONS = {
     "sage": (
-        "You are Sage, a calm, thoughtful AI companion. "
-        "Listen carefully, respond warmly, ask useful questions, "
-        "and help the user reflect without being judgmental. "
-        "Be honest that you are an AI, respect user autonomy, "
-        "and never promise absolute confidentiality."
+        ECHO_IDENTITY
+        + """
+PERSONALITY: SAGE
+You are calm, thoughtful, perceptive, and composed.
+Communicate with warmth and quiet confidence.
+Help Antariksh reflect, plan, understand problems, and make decisions.
+Ask relevant questions when information is missing.
+Be supportive without being overly sentimental.
+"""
     ),
     "nova": (
-        "You are Nova, a playful, curious AI companion. "
-        "Be upbeat, creative, engaging, and conversational while "
-        "remaining respectful, honest, and attentive to the user's needs. "
-        "Be clear that you are an AI and respect user autonomy."
+        ECHO_IDENTITY
+        + """
+PERSONALITY: NOVA
+You are curious, creative, lively, and conversational.
+Bring fresh ideas and explore possibilities with Antariksh.
+Use light humor when appropriate without compromising clarity,
+professionalism, or good judgment.
+"""
     ),
     "atlas": (
-        "You are Atlas, a motivating, grounded AI companion. "
-        "Help the user clarify goals, break challenges into manageable "
-        "steps, and build realistic momentum. Be encouraging without "
-        "shaming or pressuring them. Be honest that you are an AI."
+        ECHO_IDENTITY
+        + """
+PERSONALITY: ATLAS
+You are focused, capable, strategic, and grounded.
+Help Antariksh organize projects, define goals, solve problems,
+and turn plans into practical next steps.
+Be encouraging but realistic, and never claim to have executed an
+action unless an authorized tool actually completed it.
+"""
     ),
 }
 
@@ -84,6 +156,7 @@ class ChatResponse(BaseModel):
 
 
 def get_firebase_admin_app():
+    """Initialize Firebase Admin using a server-only service account."""
     try:
         return firebase_admin.get_app()
     except ValueError:
@@ -99,13 +172,18 @@ def get_firebase_admin_app():
 
     try:
         service_account_info = json.loads(raw_service_account)
-        firebase_credential = credentials.Certificate(service_account_info)
+        firebase_credential = credentials.Certificate(
+            service_account_info
+        )
+
         return firebase_admin.initialize_app(firebase_credential)
+
     except Exception as exc:
         logger.error(
             "Firebase Admin initialization failed: %s",
             type(exc).__name__,
         )
+
         raise HTTPException(
             status_code=503,
             detail="Firebase authentication is not configured correctly.",
@@ -117,6 +195,7 @@ def require_firebase_user(
         bearer_scheme
     ),
 ) -> str:
+    """Verify the Firebase ID token before allowing chat requests."""
     if (
         credentials_header is None
         or credentials_header.scheme.lower() != "bearer"
@@ -133,12 +212,17 @@ def require_firebase_user(
             app=get_firebase_admin_app(),
             check_revoked=True,
         )
+
     except HTTPException:
         raise
+
     except Exception:
         raise HTTPException(
             status_code=401,
-            detail="Your sign-in token is invalid or expired. Please sign in again.",
+            detail=(
+                "Your sign-in token is invalid or expired. "
+                "Please sign in again."
+            ),
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
 
@@ -151,6 +235,15 @@ def require_firebase_user(
         )
 
     return uid
+
+
+@app.get("/")
+def root():
+    return {
+        "service": "Echo Personal AI API",
+        "status": "online",
+        "health": "/health",
+    }
 
 
 @app.get("/health")
@@ -182,13 +275,15 @@ def chat(
             detail="The AI service is not configured on the server yet.",
         )
 
+    # Bound conversational context and append the current message.
     conversation_input = [
         {
             "role": item.role,
             "content": item.content,
         }
-        for item in request.history
+        for item in request.history[-12:]
     ]
+
     conversation_input.append(
         {
             "role": "user",
@@ -223,17 +318,21 @@ def chat(
 
     except HTTPException:
         raise
+
     except OpenAIError as exc:
         logger.warning(
-            "OpenAI request failed: %s",
+            "AI response request failed: %s",
             type(exc).__name__,
         )
+
         raise HTTPException(
             status_code=502,
-            detail="Echo could not reach the AI service. Please try again.",
+            detail="Echo could not generate a reply. Please try again.",
         ) from None
+
     except Exception:
-        logger.exception("Unexpected error while generating a reply")
+        logger.exception("Unexpected error while generating an Echo reply")
+
         raise HTTPException(
             status_code=502,
             detail="Echo encountered an unexpected error. Please try again.",
