@@ -315,14 +315,66 @@
   }
 }
 
-/* Fit the character neatly inside the existing companion card. */
-.feature-avatar .echo-avatar-hero {
-  width: 60px;
-  height: 60px;
+/* Larger, portrait-style character in the companion panel. */
+.companion-panel .companion-feature {
+  min-height: 260px;
 }
 
-.feature-avatar .echo-avatar-status {
+.companion-panel .companion-feature .feature-avatar {
+  top: 8px;
+  right: 2px;
+  display: block;
+  width: 164px;
+  height: 194px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+.companion-panel .feature-avatar .echo-avatar-hero {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: 48%;
+  background: transparent;
+}
+
+.companion-panel .feature-avatar .echo-avatar-art {
+  width: 100%;
+  height: 100%;
+}
+
+.companion-panel .feature-avatar .echo-avatar-status {
   display: none;
+}
+
+.companion-panel .companion-feature .feature-copy {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  max-width: 52%;
+  z-index: 2;
+}
+
+.companion-panel .companion-feature .feature-status {
+  z-index: 3;
+}
+
+@media (max-width: 700px) {
+  .companion-panel .companion-feature {
+    min-height: 230px;
+  }
+
+  .companion-panel .companion-feature .feature-avatar {
+    top: 12px;
+    right: 2px;
+    width: 136px;
+    height: 164px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
