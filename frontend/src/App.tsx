@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 
+import EchoAvatar, { type EchoAvatarState } from "./EchoAvatar";
 import { sendChatMessage } from "./chatService";
 import {
   createConversation,
@@ -104,12 +105,16 @@ function App() {
   const [chatError, setChatError] = useState("");
   const [activeNav, setActiveNav] = useState("chat");
 
-  // Ignore late responses after the user switches conversations.
   const conversationVersion = useRef(0);
 
   const selectedPersona =
     personas.find((persona) => persona.id === selectedPersonaId) ??
     personas[0];
+
+  // The animated character reflects Echo's current activity.
+  const avatarState: EchoAvatarState = isThinking
+    ? "thinking"
+    : "idle";
 
   useEffect(() => {
     let cancelled = false;
@@ -228,7 +233,6 @@ function App() {
     try {
       let conversationId = activeConversationId;
 
-      // Create a Firestore record only when a new chat gets its first message.
       if (!conversationId) {
         conversationId = await createConversation(
           text,
@@ -242,6 +246,7 @@ function App() {
         setActiveConversationId(conversationId);
 
         const now = Date.now();
+
         const newConversation: SavedConversation = {
           id: conversationId,
           title: text.slice(0, 100) || "New conversation",
@@ -258,7 +263,6 @@ function App() {
         ]);
       }
 
-      // Persist the user's message before requesting the AI response.
       await saveConversationMessage(
         conversationId,
         "user",
@@ -298,7 +302,6 @@ function App() {
 
       setMessages((current) => [...current, reply]);
 
-      // Persist the AI reply as well.
       await saveConversationMessage(
         conversationId,
         "assistant",
@@ -545,11 +548,11 @@ function App() {
             {messages.length === 0 ? (
               <div className="chat-welcome">
                 <div className="welcome-orb">
-                  <div className="orb-core">✦</div>
-                  <span className="orb-ring orb-ring-one" />
-                  <span className="orb-ring orb-ring-two" />
-                  <span className="orb-spark orb-spark-one">✧</span>
-                  <span className="orb-spark orb-spark-two">·</span>
+                  <EchoAvatar
+                    state="idle"
+                    size="hero"
+                    label="Echo holographic character"
+                  />
                 </div>
 
                 <div className="welcome-kicker">
@@ -661,10 +664,12 @@ function App() {
 
                   {isThinking && (
                     <div className="message-row">
-                      <div
-                        className={`message-avatar ${selectedPersona.color}`}
-                      >
-                        {selectedPersona.avatar}
+                      <div className="message-avatar lilac">
+                        <EchoAvatar
+                          state="thinking"
+                          size="chat"
+                          label="Echo is thinking"
+                        />
                       </div>
 
                       <div className="message-content">
@@ -690,10 +695,7 @@ function App() {
             )}
 
             <div className="composer-wrap">
-              <form
-                className="composer"
-                onSubmit={sendMessage}
-              >
+              <form className="composer" onSubmit={sendMessage}>
                 <span className="composer-plus">＋</span>
 
                 <input
@@ -737,7 +739,7 @@ function App() {
                 <span className="panel-eyebrow">
                   YOUR COMPANION
                 </span>
-                <h2>Find your kind of energy.</h2>
+                <h2>Meet Echo.</h2>
               </div>
               <span className="panel-star">✧</span>
             </div>
@@ -747,20 +749,26 @@ function App() {
             >
               <div className="feature-orbit feature-orbit-one" />
               <div className="feature-orbit feature-orbit-two" />
+
               <div className="feature-avatar">
-                {selectedPersona.avatar}
+                <EchoAvatar
+                  state={avatarState}
+                  size="hero"
+                  label="Echo personal assistant"
+                />
               </div>
 
               <div className="feature-copy">
                 <span className="feature-label">
-                  YOUR COMPANION
+                  YOUR PERSONAL ASSISTANT
                 </span>
-                <h3>{selectedPersona.name}</h3>
-                <p>{selectedPersona.role}</p>
+                <h3>Echo</h3>
+                <p>Designed by Antariksh Tyagi</p>
               </div>
 
               <span className="feature-status">
-                <span /> AI companion
+                <span />
+                {isThinking ? "Thinking" : "Ready"}
               </span>
             </div>
 
