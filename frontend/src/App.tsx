@@ -1,6 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
+
 import { sendChatMessage } from "./chatService";
+import {
+  createConversation,
+  listConversations,
+  loadConversationMessages,
+  saveConversationMessage,
+} from "./conversationService";
+import type {
+  SavedConversation,
+  PersonaId as StoredPersonaId,
+  MessageRole,
+} from "./conversationService";
 
 const personas = [
   {
@@ -36,7 +48,6 @@ const personas = [
 ] as const;
 
 type PersonaId = (typeof personas)[number]["id"];
-type MessageRole = "user" | "assistant";
 
 type Message = {
   id: string;
@@ -72,24 +83,67 @@ const starters = [
   },
 ];
 
+function formatTime(timestamp = Date.now()): string {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(timestamp);
+}
+
 function App() {
   const [selectedPersonaId, setSelectedPersonaId] =
     useState<PersonaId>("sage");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] =
+    useState<SavedConversation[]>([]);
+  const [activeConversationId, setActiveConversationId] =
+    useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [chatError, setChatError] = useState("");
   const [activeNav, setActiveNav] = useState("chat");
 
-  // Prevent a response to an old conversation appearing in a new chat.
+  // Ignore late responses after the user switches conversations.
   const conversationVersion = useRef(0);
 
   const selectedPersona =
     personas.find((persona) => persona.id === selectedPersonaId) ??
     personas[0];
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadHistory() {
+      try {
+        const saved = await listConversations();
+
+        if (!cancelled) {
+          setConversations(saved);
+        }
+      } catch {
+        if (!cancelled) {
+          setChatError(
+            "Couldn't load your saved conversations. Check your Firebase configuration and Firestore rules."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingHistory(false);
+        }
+      }
+    }
+
+    void loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function startNewChat() {
     conversationVersion.current += 1;
+    setActiveConversationId(null);
     setMessages([]);
     setDraft("");
     setIsThinking(false);
@@ -97,7 +151,51 @@ function App() {
     setActiveNav("chat");
   }
 
-  async function sendMessage(event?: FormEvent<HTMLFormElement>) {
+  async function openConversation(
+    conversation: SavedConversation
+  ) {
+    conversationVersion.current += 1;
+    const version = conversationVersion.current;
+
+    setActiveConversationId(conversation.id);
+    setSelectedPersonaId(conversation.persona);
+    setMessages([]);
+    setDraft("");
+    setIsThinking(false);
+    setChatError("");
+    setActiveNav("chat");
+
+    try {
+      const savedMessages = await loadConversationMessages(
+        conversation.id
+      );
+
+      if (conversationVersion.current !== version) {
+        return;
+      }
+
+      setMessages(
+        savedMessages.map((message) => ({
+          id: message.id,
+          role: message.role,
+          text: message.content,
+          time: formatTime(message.createdAt),
+        }))
+      );
+    } catch (error) {
+      if (conversationVersion.current === version) {
+        setChatError(
+          error instanceof Error
+            ? error.message
+            : "Couldn't load this conversation."
+        );
+      }
+    }
+  }
+
+  async function sendMessage(
+    event?: FormEvent<HTMLFormElement>
+  ) {
     event?.preventDefault();
 
     const text = draft.trim();
@@ -107,8 +205,8 @@ function App() {
     }
 
     const version = conversationVersion.current;
+    const personaForRequest = selectedPersonaId;
 
-    // Only send recent context to keep requests bounded.
     const history = messages.slice(-12).map((message) => ({
       role: message.role,
       content: message.text,
@@ -118,18 +216,72 @@ function App() {
       id: `${Date.now()}-user`,
       role: "user",
       text,
-      time: "Just now",
+      time: formatTime(),
     };
 
     setMessages((current) => [...current, userMessage]);
     setDraft("");
     setIsThinking(true);
     setChatError("");
+    setActiveNav("chat");
 
     try {
+      let conversationId = activeConversationId;
+
+      // Create a Firestore record only when a new chat gets its first message.
+      if (!conversationId) {
+        conversationId = await createConversation(
+          text,
+          personaForRequest
+        );
+
+        if (conversationVersion.current !== version) {
+          return;
+        }
+
+        setActiveConversationId(conversationId);
+
+        const now = Date.now();
+        const newConversation: SavedConversation = {
+          id: conversationId,
+          title: text.slice(0, 100) || "New conversation",
+          persona: personaForRequest as StoredPersonaId,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        setConversations((current) => [
+          newConversation,
+          ...current.filter(
+            (item) => item.id !== conversationId
+          ),
+        ]);
+      }
+
+      // Persist the user's message before requesting the AI response.
+      await saveConversationMessage(
+        conversationId,
+        "user",
+        text
+      );
+
+      if (conversationVersion.current !== version) {
+        return;
+      }
+
+      const savedAt = Date.now();
+
+      setConversations((current) =>
+        current.map((item) =>
+          item.id === conversationId
+            ? { ...item, updatedAt: savedAt }
+            : item
+        )
+      );
+
       const replyText = await sendChatMessage({
         message: text,
-        persona: selectedPersonaId,
+        persona: personaForRequest,
         history,
       });
 
@@ -141,10 +293,33 @@ function App() {
         id: `${Date.now()}-assistant`,
         role: "assistant",
         text: replyText,
-        time: "Just now",
+        time: formatTime(),
       };
 
       setMessages((current) => [...current, reply]);
+
+      // Persist the AI reply as well.
+      await saveConversationMessage(
+        conversationId,
+        "assistant",
+        replyText
+      );
+
+      if (conversationVersion.current !== version) {
+        return;
+      }
+
+      const updatedAt = Date.now();
+
+      setConversations((current) =>
+        current
+          .map((item) =>
+            item.id === conversationId
+              ? { ...item, updatedAt }
+              : item
+          )
+          .sort((a, b) => b.updatedAt - a.updatedAt)
+      );
     } catch (error) {
       if (conversationVersion.current !== version) {
         return;
@@ -153,7 +328,7 @@ function App() {
       setChatError(
         error instanceof Error
           ? error.message
-          : "Echo couldn't reply. Please try again."
+          : "Echo couldn't complete your message. Please try again."
       );
     } finally {
       if (conversationVersion.current === version) {
@@ -212,7 +387,7 @@ function App() {
             <span className="nav-icon">◫</span>
             <span>Conversations</span>
             <span className="nav-count">
-              {messages.length > 0 ? "1" : "0"}
+              {conversations.length}
             </span>
           </button>
 
@@ -246,31 +421,51 @@ function App() {
         <div className="sidebar-section-title">
           <span>RECENT CONVERSATIONS</span>
           <span className="muted-number">
-            {messages.length > 0 ? "1" : "0"}
+            {conversations.length}
           </span>
         </div>
 
-        {messages.length > 0 ? (
-          <button
-            className="recent-conversation"
-            type="button"
-            onClick={() => setActiveNav("chat")}
-          >
-            <span className="recent-indicator" />
-            <span className="recent-copy">
-              <strong>
-                {messages.find((message) => message.role === "user")?.text
-                  .slice(0, 26) || "New conversation"}
-              </strong>
-              <small>Current session</small>
-            </span>
-          </button>
-        ) : (
-          <div className="recent-empty">
-            <span className="recent-empty-icon">◷</span>
-            <p>Your conversations will appear here.</p>
-          </div>
-        )}
+        <div className="recent-conversations-list">
+          {isLoadingHistory ? (
+            <div className="recent-empty">
+              <p>Loading conversations...</p>
+            </div>
+          ) : conversations.length > 0 ? (
+            conversations.slice(0, 12).map((conversation) => (
+              <button
+                className={`recent-conversation ${
+                  activeConversationId === conversation.id
+                    ? "recent-conversation-active"
+                    : ""
+                }`}
+                type="button"
+                key={conversation.id}
+                onClick={() => void openConversation(conversation)}
+                aria-current={
+                  activeConversationId === conversation.id
+                    ? "page"
+                    : undefined
+                }
+              >
+                <span className="recent-indicator" />
+                <span className="recent-copy">
+                  <strong>{conversation.title}</strong>
+                  <small>
+                    {personas.find(
+                      (persona) =>
+                        persona.id === conversation.persona
+                    )?.name ?? "Sage"}
+                  </small>
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="recent-empty">
+              <span className="recent-empty-icon">◷</span>
+              <p>Your conversations will appear here.</p>
+            </div>
+          )}
+        </div>
 
         <div className="sidebar-spacer" />
 
@@ -279,7 +474,8 @@ function App() {
           <div>
             <strong>Your space, your rules</strong>
             <p>
-              Conversation history is not saved between sessions yet.
+              Conversations are saved to your signed-in account.
+              Memory controls are coming next.
             </p>
           </div>
         </div>
@@ -337,8 +533,8 @@ function App() {
           <div>
             <strong>Your personal AI companion</strong>
             <span>
-              Talk with Sage, Nova, or Atlas. Real AI replies are
-              enabled when the backend is configured.
+              Talk with Sage, Nova, or Atlas. Your conversations
+              are saved to your account.
             </span>
           </div>
           <span className="banner-status">AI MODE</span>
@@ -367,8 +563,8 @@ function App() {
                 </h1>
 
                 <p className="welcome-description">
-                  No scripts. No pressure. Just a space to think, talk,
-                  explore, and be yourself.
+                  No scripts. No pressure. Just a space to think,
+                  talk, explore, and be yourself.
                 </p>
 
                 <div className="prompt-heading">
@@ -406,7 +602,7 @@ function App() {
                   </span>
                   <div>
                     <strong>You and {selectedPersona.name}</strong>
-                    <span>AI conversation</span>
+                    <span>Saved AI conversation</span>
                   </div>
                 </div>
 
@@ -414,7 +610,9 @@ function App() {
                   {messages.map((message) => (
                     <article
                       className={`message-row ${
-                        message.role === "user" ? "message-row-user" : ""
+                        message.role === "user"
+                          ? "message-row-user"
+                          : ""
                       }`}
                       key={message.id}
                     >
@@ -492,7 +690,10 @@ function App() {
             )}
 
             <div className="composer-wrap">
-              <form className="composer" onSubmit={sendMessage}>
+              <form
+                className="composer"
+                onSubmit={sendMessage}
+              >
                 <span className="composer-plus">＋</span>
 
                 <input
@@ -500,7 +701,9 @@ function App() {
                   className="composer-input"
                   type="text"
                   value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
+                  onChange={(event) =>
+                    setDraft(event.target.value)
+                  }
                   onKeyDown={handleComposerKeyDown}
                   placeholder={`Share what's on your mind with ${selectedPersona.name}...`}
                   disabled={isThinking}
@@ -522,7 +725,7 @@ function App() {
                 <span>↵ Enter to send</span>
                 <span className="footnote-divider">·</span>
                 <span>
-                  Messages are sent to the AI service and are not saved yet.
+                  Messages are saved to your signed-in account.
                 </span>
               </div>
             </div>
@@ -531,7 +734,9 @@ function App() {
           <aside className="companion-panel">
             <div className="panel-heading">
               <div>
-                <span className="panel-eyebrow">YOUR COMPANION</span>
+                <span className="panel-eyebrow">
+                  YOUR COMPANION
+                </span>
                 <h2>Find your kind of energy.</h2>
               </div>
               <span className="panel-star">✧</span>
@@ -542,10 +747,14 @@ function App() {
             >
               <div className="feature-orbit feature-orbit-one" />
               <div className="feature-orbit feature-orbit-two" />
-              <div className="feature-avatar">{selectedPersona.avatar}</div>
+              <div className="feature-avatar">
+                {selectedPersona.avatar}
+              </div>
 
               <div className="feature-copy">
-                <span className="feature-label">YOUR COMPANION</span>
+                <span className="feature-label">
+                  YOUR COMPANION
+                </span>
                 <h3>{selectedPersona.name}</h3>
                 <p>{selectedPersona.role}</p>
               </div>
@@ -608,7 +817,6 @@ function App() {
 
             <div className="memory-card">
               <div className="memory-card-icon">⌘</div>
-
               <div className="memory-card-copy">
                 <strong>Memory, your way</strong>
                 <p>
