@@ -315,6 +315,16 @@
   }
 }
 
+/* Fit the character neatly inside the existing companion card. */
+.feature-avatar .echo-avatar-hero {
+  width: 60px;
+  height: 60px;
+}
+
+.feature-avatar .echo-avatar-status {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .echo-avatar *,
   .echo-avatar *::before,
