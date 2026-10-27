@@ -1,0 +1,325 @@
+.echo-avatar {
+  --echo-avatar-glow: rgba(151, 119, 255, 0.42);
+  --echo-avatar-line: rgba(191, 168, 255, 0.6);
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(127, 95, 210, 0.2),
+      rgba(19, 15, 33, 0.3) 55%,
+      transparent 72%
+    );
+}
+
+.echo-avatar-hero {
+  width: min(100%, 250px);
+  aspect-ratio: 1;
+}
+
+.echo-avatar-panel {
+  width: 122px;
+  height: 142px;
+}
+
+.echo-avatar-chat {
+  width: 48px;
+  height: 54px;
+  border-radius: 14px;
+}
+
+.echo-avatar-halo {
+  position: absolute;
+  inset: 12%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--echo-avatar-glow),
+    rgba(112, 81, 195, 0.12) 44%,
+    transparent 72%
+  );
+  filter: blur(10px);
+  animation: echo-avatar-halo-pulse 4s ease-in-out infinite;
+}
+
+.echo-avatar-ring {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid var(--echo-avatar-line);
+  border-radius: 50%;
+  opacity: 0.48;
+}
+
+.echo-avatar-ring-one {
+  inset: 12%;
+  border-right-color: transparent;
+  border-bottom-color: rgba(130, 102, 226, 0.13);
+  animation: echo-avatar-spin 18s linear infinite;
+}
+
+.echo-avatar-ring-two {
+  inset: 19%;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: rgba(170, 149, 255, 0.7);
+  animation: echo-avatar-spin-reverse 13s linear infinite;
+}
+
+.echo-avatar-ring-three {
+  inset: 7%;
+  border-style: dashed;
+  border-color: rgba(139, 114, 226, 0.24);
+  animation: echo-avatar-spin 40s linear infinite;
+}
+
+.echo-avatar-art {
+  display: block;
+  width: 88%;
+  height: 95%;
+  overflow: visible;
+  transform-origin: 50% 58%;
+  animation: echo-avatar-float 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 13px rgba(130, 95, 237, 0.2));
+}
+
+.echo-avatar-chat .echo-avatar-art {
+  width: 110%;
+  height: 110%;
+}
+
+.echo-avatar-body {
+  transform-origin: 50% 70%;
+  animation: echo-avatar-body-glow 4s ease-in-out infinite;
+}
+
+.echo-avatar-eyes {
+  transform-origin: 50% 105px;
+  animation: echo-avatar-eye-blink 6s infinite;
+}
+
+.echo-avatar-mouth {
+  transform-origin: 50% 142px;
+}
+
+.echo-avatar-state-speaking .echo-avatar-mouth {
+  animation: echo-avatar-mouth-move 240ms ease-in-out infinite alternate;
+}
+
+.echo-avatar-state-thinking .echo-avatar-art {
+  animation-duration: 2.7s;
+  filter: drop-shadow(0 0 20px rgba(175, 143, 255, 0.52));
+}
+
+.echo-avatar-state-thinking .echo-avatar-ring-one,
+.echo-avatar-state-thinking .echo-avatar-ring-three {
+  animation-duration: 4s;
+}
+
+.echo-avatar-state-listening .echo-avatar-halo {
+  background: radial-gradient(
+    circle,
+    rgba(76, 198, 255, 0.4),
+    rgba(114, 103, 240, 0.18) 50%,
+    transparent 72%
+  );
+}
+
+.echo-avatar-state-listening .echo-avatar-ring {
+  border-color: rgba(118, 205, 255, 0.65);
+  animation-duration: 5s;
+}
+
+.echo-avatar-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d7c8ff;
+  box-shadow: 0 0 10px rgba(185, 156, 255, 0.95);
+  pointer-events: none;
+}
+
+.echo-avatar-particle-one {
+  top: 27%;
+  left: 18%;
+  animation: echo-avatar-particle-float 4s ease-in-out infinite;
+}
+
+.echo-avatar-particle-two {
+  top: 56%;
+  right: 14%;
+  width: 3px;
+  height: 3px;
+  animation: echo-avatar-particle-float 3.6s ease-in-out infinite reverse;
+}
+
+.echo-avatar-particle-three {
+  right: 25%;
+  bottom: 18%;
+  width: 2px;
+  height: 2px;
+  animation: echo-avatar-particle-float 5s ease-in-out infinite;
+}
+
+.echo-avatar-status {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(183, 157, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(18, 14, 31, 0.86);
+  color: #c6b7f2;
+  font-family: "DM Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 650;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.echo-avatar-chat .echo-avatar-status {
+  display: none;
+}
+
+.echo-avatar-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a990ff;
+  box-shadow: 0 0 7px rgba(169, 144, 255, 0.85);
+}
+
+.echo-avatar-state-listening .echo-avatar-status-dot {
+  background: #63d9ff;
+  box-shadow: 0 0 7px rgba(99, 217, 255, 0.95);
+  animation: echo-avatar-status-pulse 1.1s ease-in-out infinite;
+}
+
+.echo-avatar-state-thinking .echo-avatar-status-dot {
+  animation: echo-avatar-status-pulse 0.75s ease-in-out infinite;
+}
+
+.echo-avatar-state-speaking .echo-avatar-status-dot {
+  background: #a8f0ca;
+  box-shadow: 0 0 7px rgba(123, 235, 178, 0.95);
+  animation: echo-avatar-status-pulse 0.35s ease-in-out infinite;
+}
+
+@keyframes echo-avatar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes echo-avatar-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes echo-avatar-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes echo-avatar-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes echo-avatar-body-glow {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes echo-avatar-eye-blink {
+  0%,
+  46%,
+  50%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  48%,
+  98% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes echo-avatar-mouth-move {
+  from {
+    transform: scaleY(0.65);
+  }
+
+  to {
+    transform: scaleY(1.3);
+  }
+}
+
+@keyframes echo-avatar-particle-float {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes echo-avatar-status-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-avatar *,
+  .echo-avatar *::before,
+  .echo-avatar *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
