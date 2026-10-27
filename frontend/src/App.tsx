@@ -21,7 +21,7 @@ const personas = [
     name: "Sage",
     role: "Calm & thoughtful",
     description:
-      "A gentle presence for reflection and meaningful conversations.",
+      "A calm presence for reflection and meaningful conversations. Sage helps you slow down, think clearly, and find balance.",
     avatar: "✦",
     color: "lilac",
     traits: ["Thoughtful", "Patient", "Grounded"],
@@ -31,7 +31,7 @@ const personas = [
     name: "Nova",
     role: "Playful & curious",
     description:
-      "A bright, curious companion for ideas, stories, and everyday fun.",
+      "A bright, expressive companion for ideas, stories, creative experiments, and everyday discoveries.",
     avatar: "✷",
     color: "peach",
     traits: ["Curious", "Playful", "Creative"],
@@ -41,7 +41,7 @@ const personas = [
     name: "Atlas",
     role: "Motivating & grounded",
     description:
-      "A supportive coach to help you focus and take the next step.",
+      "A focused, dependable companion for organizing goals, solving problems, and moving projects forward.",
     avatar: "↗",
     color: "blue",
     traits: ["Focused", "Encouraging", "Practical"],
@@ -111,7 +111,6 @@ function App() {
     personas.find((persona) => persona.id === selectedPersonaId) ??
     personas[0];
 
-  // The animated character reflects Echo's current activity.
   const avatarState: EchoAvatarState = isThinking
     ? "thinking"
     : "idle";
@@ -355,7 +354,7 @@ function App() {
   }
 
   return (
-    <div className="echo-app">
+    <div className={`echo-app echo-theme-${selectedPersonaId}`}>
       <aside className="sidebar">
         <button
           className="brand"
@@ -415,6 +414,36 @@ function App() {
           >
             <span className="nav-icon">♡</span>
             <span>My memories</span>
+            <span className="soon-label">Soon</span>
+          </button>
+
+          <button
+            className="nav-link"
+            onClick={() => setActiveNav("projects")}
+            type="button"
+          >
+            <span className="nav-icon">▱</span>
+            <span>Projects</span>
+            <span className="soon-label">Soon</span>
+          </button>
+
+          <button
+            className="nav-link"
+            onClick={() => setActiveNav("home")}
+            type="button"
+          >
+            <span className="nav-icon">⌂</span>
+            <span>Home</span>
+            <span className="soon-label">Soon</span>
+          </button>
+
+          <button
+            className="nav-link"
+            onClick={() => setActiveNav("labs")}
+            type="button"
+          >
+            <span className="nav-icon">⚗</span>
+            <span>Labs</span>
             <span className="soon-label">Soon</span>
           </button>
         </nav>
@@ -546,13 +575,53 @@ function App() {
         <div className="content-grid">
           <section className="chat-column">
             {messages.length === 0 ? (
-              <div className="chat-welcome">
-                <div className="welcome-orb">
-                  <EchoAvatar
-                    state="idle"
-                    size="hero"
-                    label="Echo holographic character"
-                  />
+              <div
+                className={`chat-welcome welcome-persona-${selectedPersonaId}`}
+              >
+                <div
+                  className={`welcome-scene welcome-scene-${selectedPersonaId}`}
+                >
+                  <div className="welcome-scene-backdrop" aria-hidden="true">
+                    <span className="welcome-scene-ring welcome-scene-ring-one" />
+                    <span className="welcome-scene-ring welcome-scene-ring-two" />
+                    <span className="welcome-scene-ring welcome-scene-ring-three" />
+
+                    {selectedPersonaId === "sage" && (
+                      <>
+                        <span className="welcome-scene-symbol symbol-left">✿</span>
+                        <span className="welcome-scene-symbol symbol-right">✿</span>
+                        <span className="welcome-scene-particle particle-left">✧</span>
+                        <span className="welcome-scene-particle particle-right">✦</span>
+                      </>
+                    )}
+
+                    {selectedPersonaId === "nova" && (
+                      <>
+                        <span className="welcome-scene-symbol symbol-left">✷</span>
+                        <span className="welcome-scene-symbol symbol-right">✧</span>
+                        <span className="welcome-scene-particle particle-left">✦</span>
+                        <span className="welcome-scene-particle particle-right">✷</span>
+                      </>
+                    )}
+
+                    {selectedPersonaId === "atlas" && (
+                      <>
+                        <span className="welcome-scene-symbol symbol-left">⌁</span>
+                        <span className="welcome-scene-symbol symbol-right">↗</span>
+                        <span className="welcome-scene-particle particle-left">✧</span>
+                        <span className="welcome-scene-particle particle-right">✦</span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="welcome-scene-character">
+                    <EchoAvatar
+                      state="idle"
+                      size="hero"
+                      persona={selectedPersonaId}
+                      label={`Echo ${selectedPersona.name} character`}
+                    />
+                  </div>
                 </div>
 
                 <div className="welcome-kicker">
@@ -601,10 +670,17 @@ function App() {
                   <span
                     className={`mini-persona-avatar ${selectedPersona.color}`}
                   >
-                    {selectedPersona.avatar}
+                    <EchoAvatar
+                      state="idle"
+                      size="chat"
+                      persona={selectedPersonaId}
+                      label={`Echo ${selectedPersona.name}`}
+                    />
                   </span>
                   <div>
-                    <strong>You and {selectedPersona.name}</strong>
+                    <strong>
+                      You and Echo · {selectedPersona.name}
+                    </strong>
                     <span>Saved AI conversation</span>
                   </div>
                 </div>
@@ -621,9 +697,14 @@ function App() {
                     >
                       {message.role === "assistant" && (
                         <div
-                          className={`message-avatar ${selectedPersona.color}`}
+                          className={`message-avatar ${selectedPersona.color} message-avatar-character`}
                         >
-                          {selectedPersona.avatar}
+                          <EchoAvatar
+                            state="idle"
+                            size="chat"
+                            persona={selectedPersonaId}
+                            label={`Echo ${selectedPersona.name}`}
+                          />
                         </div>
                       )}
 
@@ -632,7 +713,7 @@ function App() {
                           <strong>
                             {message.role === "user"
                               ? "You"
-                              : selectedPersona.name}
+                              : `Echo · ${selectedPersona.name}`}
                           </strong>
                           <span>{message.time}</span>
                         </div>
@@ -664,17 +745,20 @@ function App() {
 
                   {isThinking && (
                     <div className="message-row">
-                      <div className="message-avatar lilac">
+                      <div
+                        className={`message-avatar ${selectedPersona.color} message-avatar-character`}
+                      >
                         <EchoAvatar
                           state="thinking"
                           size="chat"
-                          label="Echo is thinking"
+                          persona={selectedPersonaId}
+                          label={`Echo ${selectedPersona.name} is thinking`}
                         />
                       </div>
 
                       <div className="message-content">
                         <div className="message-meta">
-                          <strong>{selectedPersona.name}</strong>
+                          <strong>Echo · {selectedPersona.name}</strong>
                           <span>Thinking</span>
                         </div>
 
@@ -703,11 +787,9 @@ function App() {
                   className="composer-input"
                   type="text"
                   value={draft}
-                  onChange={(event) =>
-                    setDraft(event.target.value)
-                  }
+                  onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={handleComposerKeyDown}
-                  placeholder={`Share what's on your mind with ${selectedPersona.name}...`}
+                  placeholder={`Share what's on your mind with Echo · ${selectedPersona.name}...`}
                   disabled={isThinking}
                   maxLength={4000}
                 />
@@ -736,16 +818,14 @@ function App() {
           <aside className="companion-panel">
             <div className="panel-heading">
               <div>
-                <span className="panel-eyebrow">
-                  YOUR COMPANION
-                </span>
+                <span className="panel-eyebrow">YOUR COMPANION</span>
                 <h2>Meet Echo.</h2>
               </div>
               <span className="panel-star">✧</span>
             </div>
 
             <div
-              className={`companion-feature companion-${selectedPersona.color}`}
+              className={`companion-feature companion-${selectedPersona.color} companion-persona-${selectedPersonaId}`}
             >
               <div className="feature-orbit feature-orbit-one" />
               <div className="feature-orbit feature-orbit-two" />
@@ -754,7 +834,8 @@ function App() {
                 <EchoAvatar
                   state={avatarState}
                   size="hero"
-                  label="Echo personal assistant"
+                  persona={selectedPersonaId}
+                  label={`Echo ${selectedPersona.name}`}
                 />
               </div>
 
@@ -762,8 +843,16 @@ function App() {
                 <span className="feature-label">
                   YOUR PERSONAL ASSISTANT
                 </span>
-                <h3>Echo</h3>
-                <p>Designed by Antariksh Tyagi</p>
+                <h3>
+                  Echo <span className="feature-name-separator">·</span>{" "}
+                  <span className="feature-persona-name">
+                    {selectedPersona.name}
+                  </span>
+                </h3>
+                <p>{selectedPersona.role}</p>
+                <p className="feature-creator">
+                  Designed by Antariksh Tyagi
+                </p>
               </div>
 
               <span className="feature-status">
@@ -780,7 +869,7 @@ function App() {
             <div className="persona-list">
               {personas.map((persona) => (
                 <button
-                  className={`persona-option ${
+                  className={`persona-option persona-option-${persona.id} ${
                     selectedPersonaId === persona.id
                       ? "persona-selected"
                       : ""
@@ -793,13 +882,23 @@ function App() {
                   type="button"
                   aria-pressed={selectedPersonaId === persona.id}
                 >
-                  <span className={`persona-avatar ${persona.color}`}>
-                    {persona.avatar}
+                  <span className={`persona-avatar persona-avatar-character ${persona.color}`}>
+                    <EchoAvatar
+                      state="idle"
+                      size="chat"
+                      persona={persona.id}
+                      label={`${persona.name} character`}
+                    />
                   </span>
 
                   <span className="persona-info">
                     <strong>{persona.name}</strong>
                     <small>{persona.role}</small>
+                    <span className="persona-traits">
+                      {persona.traits.map((trait) => (
+                        <span key={trait}>{trait}</span>
+                      ))}
+                    </span>
                   </span>
 
                   <span className="persona-check">
@@ -815,12 +914,6 @@ function App() {
               </span>
 
               <p>{selectedPersona.description}</p>
-
-              <div className="trait-list">
-                {selectedPersona.traits.map((trait) => (
-                  <span key={trait}>{trait}</span>
-                ))}
-              </div>
             </div>
 
             <div className="memory-card">
