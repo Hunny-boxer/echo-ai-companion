@@ -1,4 +1,3 @@
-
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -8,22 +7,89 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 
 import type { EchoAvatarState } from "./EchoAvatar";
 
-const SAGE_MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
+const ANIMATED_MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
+const ORIGINAL_MODEL_URL = "/models/sage-rigged.glb";
 
 type Sage3DCharacterProps = {
   state?: EchoAvatarState;
   compact?: boolean;
 };
 
-function SageRig({ state }: { state: EchoAvatarState }) {
-  const { scene, animations } = useGLTF(SAGE_MODEL_URL);
+function normalizeClipName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z]/g, "");
+}
 
-  const model = useMemo(
-    () => cloneSkeleton(scene) as THREE.Group,
-    [scene]
-  );
+function SageRig({
+  state,
+  compact,
+}: {
+  state: EchoAvatarState;
+  compact: boolean;
+}) {
+  const { scene: animatedScene, animations } = useGLTF(ANIMATED_MODEL_URL);
+  const { scene: originalScene } = useGLTF(ORIGINAL_MODEL_URL);
 
-  // Measure and center the character automatically.
+  const model = useMemo(() => {
+    // Retain the animated GLB's skeleton and meshes.
+    const copy = cloneSkeleton(animatedScene) as THREE.Group;
+    const originalMeshes: THREE.Mesh[] = [];
+    const originalsByName = new Map<string, THREE.Mesh[]>();
+
+    // Collect the original, fully textured model's meshes.
+    originalScene.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+
+      originalMeshes.push(mesh);
+
+      const matches = originalsByName.get(mesh.name) ?? [];
+      matches.push(mesh);
+      originalsByName.set(mesh.name, matches);
+    });
+
+    // Restore original materials without discarding the animated skeleton.
+    let meshIndex = 0;
+
+    copy.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+
+      const matches = originalsByName.get(mesh.name);
+      const source = matches?.shift() ?? originalMeshes[meshIndex];
+
+      meshIndex += 1;
+
+      const cloneMaterial = (material: THREE.Material) => {
+        const cloned = material.clone();
+
+        // Retain the source material's real color, texture and opacity.
+        if (cloned instanceof THREE.MeshStandardMaterial) {
+          cloned.needsUpdate = true;
+        }
+
+        return cloned;
+      };
+
+      if (source) {
+        mesh.material = Array.isArray(source.material)
+          ? source.material.map(cloneMaterial)
+          : cloneMaterial(source.material);
+      } else {
+        // Fallback for any mesh without a matching source mesh.
+        const originalMaterial = mesh.material;
+
+        mesh.material = Array.isArray(originalMaterial)
+          ? originalMaterial.map(cloneMaterial)
+          : cloneMaterial(originalMaterial);
+      }
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+
+    return copy;
+  }, [animatedScene, originalScene]);
+
   const framing = useMemo(() => {
     model.updateMatrixWorld(true);
 
@@ -31,8 +97,9 @@ function SageRig({ state }: { state: EchoAvatarState }) {
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
 
-    const maxDimension = Math.max(size.x, size.y, size.z, 0.001);
-    const scale = 1.85 / maxDimension;
+    // Fit to actual height instead of scaling by width/depth.
+    const targetHeight = compact ? 1.18 : 1.85;
+    const scale = targetHeight / Math.max(size.y, 0.001);
 
     return {
       scale,
@@ -42,22 +109,34 @@ function SageRig({ state }: { state: EchoAvatarState }) {
         -center.z * scale
       ),
     };
-  }, [model]);
+  }, [model, compact]);
 
-  const { actions } = useAnimations(animations, model);
+  const { actions, names } = useAnimations(animations, model);
+
   const activeAction = useRef<THREE.AnimationAction | null>(null);
   const root = useRef<THREE.Group | null>(null);
 
-  // Choose the real animation embedded in the GLB.
+  // Play the appropriate embedded skeletal animation.
   useEffect(() => {
-    const clipName =
+    const requested =
       state === "speaking"
         ? "TalkingGesture"
         : state === "thinking"
           ? "Thinking"
           : "Idle";
 
-    const next = actions[clipName] ?? actions["Idle"];
+    const requestedName = normalizeClipName(requested);
+
+    const matchedName =
+      names.find(
+        (name) => normalizeClipName(name) === requestedName
+      ) ??
+      names.find(
+        (name) => normalizeClipName(name) === "idle"
+      ) ??
+      names[0];
+
+    const next = matchedName ? actions[matchedName] : undefined;
 
     if (!next || activeAction.current === next) return;
 
@@ -77,7 +156,7 @@ function SageRig({ state }: { state: EchoAvatarState }) {
     }
 
     activeAction.current = next;
-  }, [actions, state]);
+  }, [actions, names, state]);
 
   useEffect(() => {
     return () => {
@@ -86,15 +165,18 @@ function SageRig({ state }: { state: EchoAvatarState }) {
     };
   }, [actions]);
 
-  // Gentle stage movement, layered on top of the real skeletal animation.
+  // Subtle movement layered on top of the skeletal animation.
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+    const time = clock.getElapsedTime();
 
     if (!root.current) return;
 
-    root.current.position.y = Math.sin(t * 1.2) * 0.008;
     root.current.rotation.y =
-      Math.sin(t * 0.42) * (state === "speaking" ? 0.025 : 0.04);
+      Math.sin(time * 0.42) *
+      (state === "speaking" ? 0.018 : 0.028);
+
+    root.current.position.y =
+      (compact ? -0.1 : 0) + Math.sin(time * 1.15) * 0.004;
   });
 
   return (
@@ -118,13 +200,13 @@ function HologramPlatform() {
   });
 
   return (
-    <group position={[0, -0.87, 0]}>
+    <group position={[0, -0.86, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.8, 80]} />
         <meshBasicMaterial
           color="#6438ec"
           transparent
-          opacity={0.12}
+          opacity={0.1}
           depthWrite={false}
         />
       </mesh>
@@ -135,17 +217,17 @@ function HologramPlatform() {
           color="#58f5ff"
           side={THREE.DoubleSide}
           transparent
-          opacity={0.85}
+          opacity={0.8}
           depthWrite={false}
         />
       </mesh>
 
       <mesh ref={outer} rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.88, 0.009, 8, 96]} />
+        <torusGeometry args={[0.88, 0.008, 8, 96]} />
         <meshBasicMaterial
           color="#58f5ff"
           transparent
-          opacity={0.85}
+          opacity={0.75}
           depthWrite={false}
         />
       </mesh>
@@ -155,7 +237,7 @@ function HologramPlatform() {
         <meshBasicMaterial
           color="#ad91ff"
           transparent
-          opacity={0.85}
+          opacity={0.75}
           depthWrite={false}
         />
       </mesh>
@@ -177,7 +259,7 @@ export default function Sage3DCharacter({
     borderRadius: compact ? 12 : 18,
     background: compact
       ? "transparent"
-      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.25), transparent 65%), linear-gradient(160deg,#1d122e,#0b0812)",
+      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.19), transparent 65%), linear-gradient(160deg,#1d122e,#0b0812)",
   };
 
   return (
@@ -190,41 +272,42 @@ export default function Sage3DCharacter({
       <Canvas
         dpr={[1, 1.5]}
         camera={{
-          position: [0, 0.05, compact ? 2.6 : 3.0],
-          fov: 38,
+          position: [0, compact ? 0.02 : 0.05, compact ? 3.05 : 3.2],
+          fov: compact ? 32 : 36,
           near: 0.01,
           far: 100,
         }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={1.5} />
+        <ambientLight intensity={0.85} />
 
         <directionalLight
           position={[2, 3, 4]}
-          intensity={2.1}
-          color="#f1e8ff"
+          intensity={1.45}
+          color="#fff5ff"
         />
 
         <directionalLight
           position={[-3, 1, -2]}
-          intensity={1.35}
-          color="#4ecfff"
+          intensity={1.1}
+          color="#6c8fff"
         />
 
         <pointLight
           position={[0, 1, 1.5]}
-          intensity={0.85}
-          color="#a78bff"
+          intensity={0.55}
+          color="#9b7aff"
         />
 
         {!compact && <HologramPlatform />}
 
         <Suspense fallback={null}>
-          <SageRig state={state} />
+          <SageRig state={state} compact={compact} />
         </Suspense>
       </Canvas>
     </div>
   );
 }
 
-useGLTF.preload(SAGE_MODEL_URL);
+useGLTF.preload(ANIMATED_MODEL_URL);
+useGLTF.preload(ORIGINAL_MODEL_URL);
