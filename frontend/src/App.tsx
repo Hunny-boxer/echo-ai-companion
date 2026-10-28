@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 
@@ -6,6 +5,7 @@ import EchoAvatar, {
   type EchoAvatarExpression,
   type EchoAvatarState,
 } from "./EchoAvatar";
+import Sage3DCharacter from "./Sage3DCharacter";
 import { sendChatMessage } from "./chatService";
 import {
   createConversation,
@@ -1064,14 +1064,18 @@ function App() {
                   </div>
 
                   <div className="welcome-scene-character">
-                    <EchoAvatar
-                      state={avatarState}
-                      size="hero"
-                      persona={selectedPersonaId}
-                      expression={avatarExpression}
-                      mouthOpen={mouthOpen}
-                      label={`Echo ${selectedPersona.name} character`}
-                    />
+                    {selectedPersonaId === "sage" ? (
+                      <Sage3DCharacter state={avatarState} />
+                    ) : (
+                      <EchoAvatar
+                        state={avatarState}
+                        size="hero"
+                        persona={selectedPersonaId}
+                        expression={avatarExpression}
+                        mouthOpen={mouthOpen}
+                        label={`Echo ${selectedPersona.name} character`}
+                      />
+                    )}
                   </div>
                 </div>
 
