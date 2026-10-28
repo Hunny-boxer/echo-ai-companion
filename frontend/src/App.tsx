@@ -1,11 +1,11 @@
+
 import { useEffect, useRef, useState } from "react";
-import type { FormEvent, KeyboardEvent } from "react";
+import type { CSSProperties, FormEvent, KeyboardEvent } from "react";
 
 import EchoAvatar, {
   type EchoAvatarExpression,
   type EchoAvatarState,
 } from "./EchoAvatar";
-import Sage3DCharacter from "./Sage3DCharacter";
 import { sendChatMessage } from "./chatService";
 import {
   createConversation,
@@ -162,6 +162,274 @@ function expressionForReply(
   return "neutral";
 }
 
+/**
+ * The welcome screen always presents all three saved characters.
+ * Clicking a character selects that persona for the conversation.
+ *
+ * These are the existing high-quality persona artworks. Nova and Atlas
+ * do not yet have their own GLB models, so they remain artwork here.
+ */
+function WelcomeTrioScene({
+  selectedPersonaId,
+  onSelectPersona,
+}: {
+  selectedPersonaId: PersonaId;
+  onSelectPersona: (id: PersonaId) => void;
+}) {
+  const styles: Record<string, CSSProperties> = {
+    scene: {
+      position: "relative",
+      isolation: "isolate",
+      display: "grid",
+      width: "100%",
+      maxWidth: 980,
+      height: "clamp(290px, 38vh, 430px)",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      alignItems: "stretch",
+      gap: "clamp(8px, 1.3vw, 18px)",
+      padding: "clamp(10px, 1.5vw, 18px)",
+      margin: "0 auto 12px",
+      overflow: "hidden",
+      border: "1px solid rgba(183, 149, 255, 0.2)",
+      borderRadius: 22,
+      background:
+        "radial-gradient(ellipse at 17% 55%, rgba(129,76,230,.24), transparent 42%), radial-gradient(ellipse at 83% 55%, rgba(64,139,255,.19), transparent 42%), radial-gradient(ellipse at 50% 52%, rgba(255,142,77,.13), transparent 42%), linear-gradient(145deg,#171023,#090711 74%)",
+    },
+    atmosphere: {
+      position: "absolute",
+      inset: 0,
+      zIndex: -1,
+      overflow: "hidden",
+      pointerEvents: "none",
+    },
+    orbitOne: {
+      position: "absolute",
+      left: "50%",
+      top: "51%",
+      width: "min(58%, 510px)",
+      aspectRatio: "1",
+      border: "1px solid rgba(175,145,255,.16)",
+      borderRadius: "50%",
+      transform: "translate(-50%, -50%)",
+    },
+    orbitTwo: {
+      position: "absolute",
+      left: "50%",
+      top: "51%",
+      width: "min(42%, 370px)",
+      aspectRatio: "1",
+      border: "1px dashed rgba(175,145,255,.19)",
+      borderRadius: "50%",
+      transform: "translate(-50%, -50%)",
+    },
+    character: {
+      position: "relative",
+      zIndex: 1,
+      display: "flex",
+      minWidth: 0,
+      minHeight: 0,
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      padding: "10px 7px 12px",
+      overflow: "hidden",
+      border: "1px solid rgba(205,183,255,.15)",
+      borderRadius: 16,
+      color: "#f4efff",
+      background:
+        "linear-gradient(180deg, rgba(255,255,255,.035), rgba(12,8,22,.78))",
+      cursor: "pointer",
+      transition:
+        "border-color 220ms ease, background 220ms ease, transform 220ms ease, box-shadow 220ms ease",
+    },
+    art: {
+      display: "flex",
+      width: "100%",
+      minWidth: 0,
+      minHeight: 0,
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+    },
+    image: {
+      display: "block",
+      width: "100%",
+      height: "100%",
+      minHeight: 0,
+      objectFit: "contain",
+      objectPosition: "center bottom",
+      filter: "drop-shadow(0 0 18px rgba(171,132,255,.2))",
+    },
+    name: {
+      marginTop: 5,
+      fontSize: "clamp(13px, 1.35vw, 19px)",
+      fontWeight: 750,
+      letterSpacing: "-0.3px",
+    },
+    role: {
+      marginTop: 4,
+      color: "#b7accb",
+      fontSize: "clamp(8px, .8vw, 11px)",
+      textAlign: "center",
+    },
+    status: {
+      marginTop: 9,
+      color: "#b9a0ff",
+      fontSize: 8,
+      fontWeight: 750,
+      letterSpacing: 1.2,
+      opacity: 0.9,
+    },
+  };
+
+  return (
+    <div
+      className={`welcome-trio-scene welcome-trio-selected-${selectedPersonaId}`}
+      style={styles.scene}
+    >
+      <style>{`
+        @keyframes echo-welcome-glow {
+          0%, 100% { opacity: .28; transform: scale(.94); }
+          50% { opacity: .48; transform: scale(1.08); }
+        }
+        @keyframes echo-welcome-orbit {
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .welcome-trio-character:hover {
+          transform: translateY(-4px);
+        }
+        .welcome-trio-character img {
+          transition: transform 260ms ease, filter 260ms ease;
+        }
+        .welcome-trio-character:hover img {
+          transform: scale(1.045);
+        }
+        .welcome-trio-character:focus-visible {
+          outline: 2px solid #c5a5ff;
+          outline-offset: 2px;
+        }
+        @media (max-width: 650px) {
+          .welcome-trio-scene {
+            height: 275px !important;
+            gap: 6px !important;
+            padding: 8px !important;
+            border-radius: 16px !important;
+          }
+          .welcome-trio-character {
+            padding: 7px 4px 9px !important;
+            border-radius: 12px !important;
+          }
+          .welcome-trio-character .welcome-trio-name {
+            font-size: 12px !important;
+          }
+          .welcome-trio-character .welcome-trio-role {
+            font-size: 8px !important;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .welcome-trio-character, .welcome-trio-character img {
+            transition: none !important;
+          }
+        }
+      `}</style>
+
+      <div style={styles.atmosphere} aria-hidden="true">
+        <span style={styles.orbitOne} />
+        <span style={styles.orbitTwo} />
+
+        {[
+          { left: "4%", top: "12%", color: "#8b4dff" },
+          { left: "39%", top: "16%", color: "#ff8b50" },
+          { right: "3%", top: "15%", color: "#3199ff" },
+        ].map((glow, index) => (
+          <span
+            key={index}
+            style={{
+              position: "absolute",
+              width: "28%",
+              aspectRatio: "1",
+              borderRadius: "50%",
+              filter: "blur(44px)",
+              opacity: 0.36,
+              background: glow.color,
+              left: "left" in glow ? glow.left : undefined,
+              right: "right" in glow ? glow.right : undefined,
+              top: glow.top,
+              animation: `echo-welcome-glow 5s ease-in-out ${index * 0.8}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      {personas.map((persona) => {
+        const selected = selectedPersonaId === persona.id;
+
+        const personaTint =
+          persona.id === "nova"
+            ? "rgba(255,147,82,.25)"
+            : persona.id === "atlas"
+              ? "rgba(69,161,255,.24)"
+              : "rgba(171,132,255,.25)";
+
+        return (
+          <button
+            key={persona.id}
+            type="button"
+            className={`welcome-trio-character welcome-trio-${persona.id} ${
+              selected ? "is-selected" : ""
+            }`}
+            style={{
+              ...styles.character,
+              borderColor: selected
+                ? "rgba(196,164,255,.82)"
+                : "rgba(205,183,255,.15)",
+              background: selected
+                ? `linear-gradient(180deg, ${personaTint}, rgba(12,8,22,.82))`
+                : "linear-gradient(180deg, rgba(255,255,255,.035), rgba(12,8,22,.78))",
+              boxShadow: selected
+                ? "0 0 26px rgba(148,100,255,.19), inset 0 0 20px rgba(148,100,255,.06)"
+                : "none",
+            }}
+            onClick={() => onSelectPersona(persona.id)}
+            aria-pressed={selected}
+            aria-label={`Choose ${persona.name}`}
+          >
+            <span style={styles.art}>
+              <img
+                src={`/personas/${persona.id}.png`}
+                alt=""
+                loading="eager"
+                style={{
+                  ...styles.image,
+                  filter:
+                    persona.id === "nova"
+                      ? "drop-shadow(0 0 18px rgba(255,148,83,.22))"
+                      : persona.id === "atlas"
+                        ? "drop-shadow(0 0 18px rgba(71,165,255,.22))"
+                        : "drop-shadow(0 0 18px rgba(171,132,255,.22))",
+                }}
+              />
+            </span>
+
+            <span className="welcome-trio-name" style={styles.name}>
+              {persona.name}
+            </span>
+
+            <span className="welcome-trio-role" style={styles.role}>
+              {persona.role}
+            </span>
+
+            <span style={styles.status}>
+              {selected ? "YOUR COMPANION" : "MEET ECHO"}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function App() {
   const [selectedPersonaId, setSelectedPersonaId] =
     useState<PersonaId>("sage");
@@ -206,7 +474,6 @@ function App() {
         ? "thinking"
         : "idle";
 
-  // Load saved conversations.
   useEffect(() => {
     let cancelled = false;
 
@@ -237,7 +504,6 @@ function App() {
     };
   }, []);
 
-  // Clean up microphone, timers, and audio when the app unmounts.
   useEffect(() => {
     return () => {
       voiceSessionRef.current = false;
@@ -298,7 +564,6 @@ function App() {
     stopSpeechPlayback();
   }
 
-  // Start one microphone listening turn.
   function startListening() {
     const speechWindow = window as Window & {
       SpeechRecognition?: RecognitionConstructorLike;
@@ -374,7 +639,6 @@ function App() {
           recognitionRef.current = null;
         }
 
-        // Resume listening after silence if this is an active voice session.
         if (voiceSessionRef.current && !finalTranscriptReceived) {
           if (restartListeningTimerRef.current !== null) {
             window.clearTimeout(restartListeningTimerRef.current);
@@ -425,7 +689,6 @@ function App() {
     }
   }
 
-  // Speak an assistant response and drive the avatar's mouth from audio timing.
   function speakReply(
     text: string,
     persona: PersonaId,
@@ -522,7 +785,6 @@ function App() {
       setSpeakingMessageId(null);
       setMouthOpen(0);
 
-      // In conversation mode, listen for the next turn.
       if (voiceSessionRef.current) {
         restartListeningTimerRef.current = window.setTimeout(() => {
           restartListeningTimerRef.current = null;
@@ -1023,61 +1285,16 @@ function App() {
             {messages.length === 0 ? (
               <div
                 className={`chat-welcome welcome-persona-${selectedPersonaId}`}
+                style={{
+                  width: "100%",
+                  maxWidth: 1020,
+                  alignSelf: "center",
+                }}
               >
-                <div
-                  className={`welcome-scene welcome-scene-${selectedPersonaId}`}
-                >
-                  <div
-                    className="welcome-scene-backdrop"
-                    aria-hidden="true"
-                  >
-                    <span className="welcome-scene-ring welcome-scene-ring-one" />
-                    <span className="welcome-scene-ring welcome-scene-ring-two" />
-                    <span className="welcome-scene-ring welcome-scene-ring-three" />
-
-                    {selectedPersonaId === "sage" && (
-                      <>
-                        <span className="welcome-scene-symbol symbol-left">✿</span>
-                        <span className="welcome-scene-symbol symbol-right">✿</span>
-                        <span className="welcome-scene-particle particle-left">✧</span>
-                        <span className="welcome-scene-particle particle-right">✦</span>
-                      </>
-                    )}
-
-                    {selectedPersonaId === "nova" && (
-                      <>
-                        <span className="welcome-scene-symbol symbol-left">✷</span>
-                        <span className="welcome-scene-symbol symbol-right">✧</span>
-                        <span className="welcome-scene-particle particle-left">✦</span>
-                        <span className="welcome-scene-particle particle-right">✷</span>
-                      </>
-                    )}
-
-                    {selectedPersonaId === "atlas" && (
-                      <>
-                        <span className="welcome-scene-symbol symbol-left">⌁</span>
-                        <span className="welcome-scene-symbol symbol-right">↗</span>
-                        <span className="welcome-scene-particle particle-left">✧</span>
-                        <span className="welcome-scene-particle particle-right">✦</span>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="welcome-scene-character">
-                    {selectedPersonaId === "sage" ? (
-                      <Sage3DCharacter state={avatarState} />
-                    ) : (
-                      <EchoAvatar
-                        state={avatarState}
-                        size="hero"
-                        persona={selectedPersonaId}
-                        expression={avatarExpression}
-                        mouthOpen={mouthOpen}
-                        label={`Echo ${selectedPersona.name} character`}
-                      />
-                    )}
-                  </div>
-                </div>
+                <WelcomeTrioScene
+                  selectedPersonaId={selectedPersonaId}
+                  onSelectPersona={selectPersona}
+                />
 
                 <div className="welcome-kicker">
                   A LITTLE SPACE JUST FOR YOU
@@ -1364,14 +1581,34 @@ function App() {
               <div className="feature-orbit feature-orbit-one" />
               <div className="feature-orbit feature-orbit-two" />
 
-              <div className="feature-avatar">
-                <EchoAvatar
-                  state={avatarState}
-                  size="hero"
-                  persona={selectedPersonaId}
-                  expression={avatarExpression}
-                  mouthOpen={mouthOpen}
-                  label={`Echo ${selectedPersona.name}`}
+              <div
+                className="feature-avatar selected-persona-art"
+                style={{
+                  width: 155,
+                  height: 190,
+                  top: 10,
+                  right: 12,
+                  border: 0,
+                  borderRadius: 12,
+                  background: "transparent",
+                  boxShadow: "none",
+                }}
+              >
+                <img
+                  className="selected-persona-portrait"
+                  src={`/personas/${selectedPersonaId}.png`}
+                  alt={`Echo ${selectedPersona.name}`}
+                  loading="eager"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "block",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "center top",
+                    borderRadius: 12,
+                  }}
                 />
               </div>
 
