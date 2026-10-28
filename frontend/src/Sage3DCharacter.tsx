@@ -7,8 +7,7 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 
 import type { EchoAvatarState } from "./EchoAvatar";
 
-const ANIMATED_MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
-const ORIGINAL_MODEL_URL = "/models/sage-rigged.glb";
+const MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
 
 type Sage3DCharacterProps = {
   state?: EchoAvatarState;
@@ -26,69 +25,53 @@ function SageRig({
   state: EchoAvatarState;
   compact: boolean;
 }) {
-  const { scene: animatedScene, animations } = useGLTF(ANIMATED_MODEL_URL);
-  const { scene: originalScene } = useGLTF(ORIGINAL_MODEL_URL);
+  const { scene, animations } = useGLTF(MODEL_URL);
 
   const model = useMemo(() => {
-    // Retain the animated GLB's skeleton and meshes.
-    const copy = cloneSkeleton(animatedScene) as THREE.Group;
-    const originalMeshes: THREE.Mesh[] = [];
-    const originalsByName = new Map<string, THREE.Mesh[]>();
-
-    // Collect the original, fully textured model's meshes.
-    originalScene.traverse((object) => {
-      const mesh = object as THREE.Mesh;
-      if (!mesh.isMesh || !mesh.geometry) return;
-
-      originalMeshes.push(mesh);
-
-      const matches = originalsByName.get(mesh.name) ?? [];
-      matches.push(mesh);
-      originalsByName.set(mesh.name, matches);
-    });
-
-    // Restore original materials without discarding the animated skeleton.
-    let meshIndex = 0;
+    const copy = cloneSkeleton(scene) as THREE.Group;
+    const violetGlow = new THREE.Color("#8b5cff");
 
     copy.traverse((object) => {
       const mesh = object as THREE.Mesh;
-      if (!mesh.isMesh || !mesh.geometry) return;
 
-      const matches = originalsByName.get(mesh.name);
-      const source = matches?.shift() ?? originalMeshes[meshIndex];
+      if (!mesh.isMesh) return;
 
-      meshIndex += 1;
+      const enhanceMaterial = (
+        source: THREE.Material
+      ): THREE.Material => {
+        const material = source.clone();
 
-      const cloneMaterial = (material: THREE.Material) => {
-        const cloned = material.clone();
-
-        // Retain the source material's real color, texture and opacity.
-        if (cloned instanceof THREE.MeshStandardMaterial) {
-          cloned.needsUpdate = true;
+        // Preserve the animated GLB's original textures and colors.
+        // Add a violet emission to make the character glow.
+        if (material instanceof THREE.MeshStandardMaterial) {
+          material.emissive.lerp(violetGlow, 0.4);
+          material.emissiveIntensity = Math.max(
+            material.emissiveIntensity,
+            0.7
+          );
         }
 
-        return cloned;
+        // Keep holographic materials visible without making opaque
+        // surfaces unnecessarily transparent.
+        if (material.transparent) {
+          material.opacity = Math.max(material.opacity, 0.88);
+          material.depthWrite = false;
+        }
+
+        material.needsUpdate = true;
+        return material;
       };
 
-      if (source) {
-        mesh.material = Array.isArray(source.material)
-          ? source.material.map(cloneMaterial)
-          : cloneMaterial(source.material);
-      } else {
-        // Fallback for any mesh without a matching source mesh.
-        const originalMaterial = mesh.material;
-
-        mesh.material = Array.isArray(originalMaterial)
-          ? originalMaterial.map(cloneMaterial)
-          : cloneMaterial(originalMaterial);
-      }
+      mesh.material = Array.isArray(mesh.material)
+        ? mesh.material.map(enhanceMaterial)
+        : enhanceMaterial(mesh.material);
 
       mesh.castShadow = true;
       mesh.receiveShadow = true;
     });
 
     return copy;
-  }, [animatedScene, originalScene]);
+  }, [scene]);
 
   const framing = useMemo(() => {
     model.updateMatrixWorld(true);
@@ -97,8 +80,9 @@ function SageRig({
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
 
-    // Fit to actual height instead of scaling by width/depth.
-    const targetHeight = compact ? 1.18 : 1.85;
+    // Fit Sage to the available height rather than the model's
+    // potentially wide robes or accessories.
+    const targetHeight = compact ? 1.45 : 1.85;
     const scale = targetHeight / Math.max(size.y, 0.001);
 
     return {
@@ -112,11 +96,9 @@ function SageRig({
   }, [model, compact]);
 
   const { actions, names } = useAnimations(animations, model);
-
   const activeAction = useRef<THREE.AnimationAction | null>(null);
   const root = useRef<THREE.Group | null>(null);
 
-  // Play the appropriate embedded skeletal animation.
   useEffect(() => {
     const requested =
       state === "speaking"
@@ -125,18 +107,15 @@ function SageRig({
           ? "Thinking"
           : "Idle";
 
-    const requestedName = normalizeClipName(requested);
+    const wanted = normalizeClipName(requested);
 
-    const matchedName =
-      names.find(
-        (name) => normalizeClipName(name) === requestedName
-      ) ??
-      names.find(
-        (name) => normalizeClipName(name) === "idle"
-      ) ??
+    // Match clip names flexibly and fall back to an available clip.
+    const clipName =
+      names.find((name) => normalizeClipName(name) === wanted) ??
+      names.find((name) => normalizeClipName(name) === "idle") ??
       names[0];
 
-    const next = matchedName ? actions[matchedName] : undefined;
+    const next = clipName ? actions[clipName] : undefined;
 
     if (!next || activeAction.current === next) return;
 
@@ -165,18 +144,15 @@ function SageRig({
     };
   }, [actions]);
 
-  // Subtle movement layered on top of the skeletal animation.
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
 
     if (!root.current) return;
 
+    root.current.position.y = Math.sin(time * 1.15) * 0.006;
     root.current.rotation.y =
       Math.sin(time * 0.42) *
-      (state === "speaking" ? 0.018 : 0.028);
-
-    root.current.position.y =
-      (compact ? -0.1 : 0) + Math.sin(time * 1.15) * 0.004;
+      (state === "speaking" ? 0.025 : 0.035);
   });
 
   return (
@@ -206,7 +182,7 @@ function HologramPlatform() {
         <meshBasicMaterial
           color="#6438ec"
           transparent
-          opacity={0.1}
+          opacity={0.12}
           depthWrite={false}
         />
       </mesh>
@@ -253,13 +229,13 @@ export default function Sage3DCharacter({
     position: "relative",
     width: "100%",
     height: "100%",
-    minHeight: compact ? 170 : 280,
+    minHeight: compact ? 190 : 280,
     overflow: "hidden",
     isolation: "isolate",
     borderRadius: compact ? 12 : 18,
     background: compact
       ? "transparent"
-      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.19), transparent 65%), linear-gradient(160deg,#1d122e,#0b0812)",
+      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.28), transparent 65%), linear-gradient(160deg,#241437,#0b0812)",
   };
 
   return (
@@ -272,31 +248,31 @@ export default function Sage3DCharacter({
       <Canvas
         dpr={[1, 1.5]}
         camera={{
-          position: [0, compact ? 0.02 : 0.05, compact ? 3.05 : 3.2],
-          fov: compact ? 32 : 36,
+          position: [0, compact ? 0.02 : 0.05, compact ? 2.55 : 3.2],
+          fov: compact ? 34 : 36,
           near: 0.01,
           far: 100,
         }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={0.85} />
+        <ambientLight intensity={1.5} />
 
         <directionalLight
           position={[2, 3, 4]}
-          intensity={1.45}
+          intensity={2.2}
           color="#fff5ff"
         />
 
         <directionalLight
           position={[-3, 1, -2]}
-          intensity={1.1}
-          color="#6c8fff"
+          intensity={1.5}
+          color="#8a9dff"
         />
 
         <pointLight
           position={[0, 1, 1.5]}
-          intensity={0.55}
-          color="#9b7aff"
+          intensity={1.1}
+          color="#b19aff"
         />
 
         {!compact && <HologramPlatform />}
@@ -309,5 +285,4 @@ export default function Sage3DCharacter({
   );
 }
 
-useGLTF.preload(ANIMATED_MODEL_URL);
-useGLTF.preload(ORIGINAL_MODEL_URL);
+useGLTF.preload(MODEL_URL);
