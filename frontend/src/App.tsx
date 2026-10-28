@@ -6,6 +6,7 @@ import EchoAvatar, {
   type EchoAvatarExpression,
   type EchoAvatarState,
 } from "./EchoAvatar";
+import Sage3DCharacter from "./Sage3DCharacter";
 import { sendChatMessage } from "./chatService";
 import {
   createConversation,
@@ -163,11 +164,8 @@ function expressionForReply(
 }
 
 /**
- * The welcome screen always presents all three saved characters.
- * Clicking a character selects that persona for the conversation.
- *
- * These are the existing high-quality persona artworks. Nova and Atlas
- * do not yet have their own GLB models, so they remain artwork here.
+ * All three saved character artworks are displayed together.
+ * Selecting one switches the conversation persona.
  */
 function WelcomeTrioScene({
   selectedPersonaId,
@@ -293,9 +291,6 @@ function WelcomeTrioScene({
           0%, 100% { opacity: .28; transform: scale(.94); }
           50% { opacity: .48; transform: scale(1.08); }
         }
-        @keyframes echo-welcome-orbit {
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
         .welcome-trio-character:hover {
           transform: translateY(-4px);
         }
@@ -328,7 +323,8 @@ function WelcomeTrioScene({
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .welcome-trio-character, .welcome-trio-character img {
+          .welcome-trio-character,
+          .welcome-trio-character img {
             transition: none !important;
           }
         }
@@ -1092,9 +1088,7 @@ function App() {
           >
             <span className="nav-icon">◫</span>
             <span>Conversations</span>
-            <span className="nav-count">
-              {conversations.length}
-            </span>
+            <span className="nav-count">{conversations.length}</span>
           </button>
 
           <button
@@ -1156,9 +1150,7 @@ function App() {
 
         <div className="sidebar-section-title">
           <span>RECENT CONVERSATIONS</span>
-          <span className="muted-number">
-            {conversations.length}
-          </span>
+          <span className="muted-number">{conversations.length}</span>
         </div>
 
         <div className="recent-conversations-list">
@@ -1594,22 +1586,26 @@ function App() {
                   boxShadow: "none",
                 }}
               >
-                <img
-                  className="selected-persona-portrait"
-                  src={`/personas/${selectedPersonaId}.png`}
-                  alt={`Echo ${selectedPersona.name}`}
-                  loading="eager"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "block",
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    objectPosition: "center top",
-                    borderRadius: 12,
-                  }}
-                />
+                {selectedPersonaId === "sage" ? (
+                  <Sage3DCharacter state={avatarState} compact />
+                ) : (
+                  <img
+                    className="selected-persona-portrait"
+                    src={`/personas/${selectedPersonaId}.png`}
+                    alt={`Echo ${selectedPersona.name}`}
+                    loading="eager"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      objectPosition: "center top",
+                      borderRadius: 12,
+                    }}
+                  />
+                )}
               </div>
 
               <div className="feature-copy">
