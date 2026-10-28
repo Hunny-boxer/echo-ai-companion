@@ -13,40 +13,70 @@ type Sage3DCharacterProps = {
   compact?: boolean;
 };
 
+function canonicalBoneName(name: string): string {
+  const lastPart = name.split(":").pop() ?? name;
+  return lastPart.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
 function SageRig({ state }: { state: EchoAvatarState }) {
   const { scene } = useGLTF("/models/sage-rigged.glb");
 
-  // Clone the scene so the character has its own independent skeleton.
   const model = useMemo(
     () => cloneSkeleton(scene) as THREE.Group,
     [scene]
   );
 
+  // Automatically fit the imported model instead of assuming its units.
+  const frame = useMemo(() => {
+    model.updateMatrixWorld(true);
+
+    const bounds = new THREE.Box3().setFromObject(model);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+
+    const largestDimension = Math.max(
+      size.x,
+      size.y,
+      size.z,
+      0.001
+    );
+
+    // Fit Sage to the viewport while preserving the original proportions.
+    const scale = 1.38 / largestDimension;
+
+    return {
+      center,
+      scale,
+      offset: new THREE.Vector3(
+        -center.x * scale,
+        -center.y * scale,
+        -center.z * scale
+      ),
+    };
+  }, [model]);
+
   const rootRef = useRef<THREE.Group | null>(null);
 
   const bones = useMemo(() => {
-    const result: Record<string, THREE.Bone> = {};
+    const found: Record<string, THREE.Bone> = {};
 
     model.traverse((object) => {
       if (object instanceof THREE.Bone) {
-        const parts = object.name.split(":");
-        const name = parts[parts.length - 1].toLowerCase();
-        result[name] = object;
+        found[canonicalBoneName(object.name)] = object;
       }
     });
 
-    return result;
+    return found;
   }, [model]);
 
-  // Keep the original rig pose as the baseline for each motion.
   const originalRotations = useMemo(() => {
-    const result = new Map<string, THREE.Euler>();
+    const rotations = new Map<THREE.Bone, THREE.Euler>();
 
-    Object.entries(bones).forEach(([name, bone]) => {
-      result.set(name, bone.rotation.clone());
+    Object.values(bones).forEach((bone) => {
+      rotations.set(bone, bone.rotation.clone());
     });
 
-    return result;
+    return rotations;
   }, [bones]);
 
   useFrame(({ clock }) => {
@@ -56,27 +86,31 @@ function SageRig({ state }: { state: EchoAvatarState }) {
     const listening = state === "listening";
 
     if (rootRef.current) {
-      // A quiet breathing motion and subtle head-on orientation shift.
-      rootRef.current.position.y =
-        -0.5 + Math.sin(t * 1.2) * 0.008;
-
+      // Subtle breathing and natural orientation changes.
+      rootRef.current.position.y = Math.sin(t * 1.2) * 0.009;
       rootRef.current.rotation.y =
-        Math.sin(t * 0.42) * (speaking ? 0.025 : 0.045);
+        Math.sin(t * 0.42) * (speaking ? 0.035 : 0.055);
     }
 
+    const headMotion = Math.sin(t * (speaking ? 2.1 : 0.65));
     const breath = Math.sin(t * 1.25) * 0.012;
-    const headNod = Math.sin(t * (speaking ? 2.1 : 0.65));
 
     function rotateBone(
-      name: string,
+      requestedName: string,
       x = 0,
       y = 0,
       z = 0
     ) {
-      const bone = bones[name];
-      const base = originalRotations.get(name);
+      const bone =
+        bones[requestedName] ??
+        Object.entries(bones).find(([name]) =>
+          name.endsWith(requestedName)
+        )?.[1];
 
-      if (!bone || !base) return;
+      if (!bone) return;
+
+      const base = originalRotations.get(bone);
+      if (!base) return;
 
       bone.rotation.set(
         base.x + x,
@@ -86,29 +120,31 @@ function SageRig({ state }: { state: EchoAvatarState }) {
       );
     }
 
-    // Head and neck: small listening tilts and thoughtful nods.
+    // Head and neck: small nods and thoughtful tilts.
     rotateBone(
       "head",
-      thinking ? -0.09 + headNod * 0.025 : headNod * 0.025,
-      Math.sin(t * 0.45) * 0.07,
-      thinking ? -0.07 : listening ? -0.025 : 0
+      thinking ? -0.075 + headMotion * 0.025 : headMotion * 0.025,
+      Math.sin(t * 0.45) * 0.065,
+      thinking ? -0.065 : listening ? -0.025 : 0
     );
 
     rotateBone(
       "neck",
-      breath + (speaking ? headNod * 0.018 : 0),
+      breath + (speaking ? headMotion * 0.02 : 0),
       Math.sin(t * 0.6) * 0.025,
       thinking ? -0.025 : 0
     );
 
-    // Torso: subtle breathing and movement while talking.
+    // Very small torso movement.
     rotateBone("spine", breath, 0, 0);
+
     rotateBone(
       "spine1",
       breath * 0.7,
       speaking ? Math.sin(t * 1.6) * 0.025 : 0,
       0
     );
+
     rotateBone(
       "spine2",
       speaking ? Math.sin(t * 1.8) * 0.025 : 0,
@@ -116,11 +152,10 @@ function SageRig({ state }: { state: EchoAvatarState }) {
       0
     );
 
-    // Arms: gentle, alternating gestures while speaking.
-    // Thinking and listening use smaller, calmer movements.
-    const gesture = speaking ? 1 : thinking ? 0.16 : listening ? 0.08 : 0.05;
-    const leftWave = Math.sin(t * 2.0);
-    const rightWave = Math.sin(t * 2.0 + Math.PI * 0.8);
+    // Alternating gestures while speaking.
+    const gesture = speaking ? 1 : thinking ? 0.16 : listening ? 0.08 : 0.04;
+    const leftWave = Math.sin(t * 2);
+    const rightWave = Math.sin(t * 2 + Math.PI * 0.8);
 
     rotateBone(
       "leftarm",
@@ -150,14 +185,22 @@ function SageRig({ state }: { state: EchoAvatarState }) {
       speaking ? rightWave * 0.045 : 0
     );
 
-    // Small wrist movements make the gestures less rigid.
     rotateBone("lefthand", 0, 0, speaking ? leftWave * 0.09 : 0);
     rotateBone("righthand", 0, 0, speaking ? rightWave * 0.09 : 0);
   });
 
   return (
-    <group ref={rootRef} position={[0, -0.5, 0]}>
-      <primitive object={model} />
+    <group ref={rootRef}>
+      <group
+        scale={frame.scale}
+        position={[
+          frame.offset.x,
+          frame.offset.y,
+          frame.offset.z,
+        ]}
+      >
+        <primitive object={model} />
+      </group>
     </group>
   );
 }
@@ -168,6 +211,7 @@ export default function Sage3DCharacter({
 }: Sage3DCharacterProps) {
   const stageStyle: CSSProperties = {
     position: "relative",
+    display: "block",
     width: "100%",
     height: "100%",
     minHeight: compact ? 170 : 260,
@@ -175,7 +219,7 @@ export default function Sage3DCharacter({
     isolation: "isolate",
     borderRadius: compact ? 12 : 18,
     background:
-      "radial-gradient(ellipse at 50% 40%, rgba(126, 79, 210, 0.24), transparent 66%), linear-gradient(160deg, #1d122e, #0b0812)",
+      "radial-gradient(ellipse at 50% 38%, rgba(126, 79, 210, 0.25), transparent 65%), linear-gradient(160deg, #1d122e, #0b0812)",
   };
 
   return (
@@ -187,10 +231,15 @@ export default function Sage3DCharacter({
     >
       <Canvas
         dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 2.15], fov: 34, near: 0.1, far: 50 }}
+        camera={{
+          position: [0, 0, 2.5],
+          fov: 38,
+          near: 0.01,
+          far: 100,
+        }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={1.6} />
+        <ambientLight intensity={1.5} />
 
         <directionalLight
           position={[2, 3, 4]}
