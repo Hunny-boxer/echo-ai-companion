@@ -1,0 +1,352 @@
+
+/* ==========================================
+   ECHO CONVERSATION POLISH
+   Premium chat layout and compact avatars
+   ========================================== */
+
+/* ---------- SAGE: DARKER MYSTIC THEME ---------- */
+
+:root:has(.echo-app.echo-theme-sage) {
+  --bg: #07060d;
+  --sidebar: #0d0a15;
+  --panel: #100d19;
+  --panel-raised: #171222;
+  --panel-hover: #20172f;
+  --border: rgba(165, 131, 224, 0.14);
+  --border-strong: rgba(183, 147, 255, 0.28);
+  --text: #f0eaff;
+  --muted: #aaa0bc;
+  --subtle: #756b89;
+}
+
+.echo-app.echo-theme-sage {
+  --bg: #07060d;
+  --sidebar: #0d0a15;
+  --panel: #100d19;
+  --panel-raised: #171222;
+  --panel-hover: #20172f;
+  --border: rgba(165, 131, 224, 0.14);
+  --border-strong: rgba(183, 147, 255, 0.28);
+  --text: #f0eaff;
+  --muted: #aaa0bc;
+  --subtle: #756b89;
+
+  --theme-rgb: 145, 99, 220;
+  --theme-accent: #bba0f7;
+  --theme-accent-strong: #8052df;
+
+  background:
+    radial-gradient(
+      ellipse at 57% 0%,
+      rgba(101, 65, 152, 0.075),
+      transparent 43%
+    ),
+    #07060d !important;
+}
+
+html:has(.echo-app.echo-theme-sage),
+body:has(.echo-app.echo-theme-sage) {
+  background: #07060d !important;
+}
+
+#root > div:has(.echo-app.echo-theme-sage) {
+  background: #07060d !important;
+}
+
+#root > div:has(.echo-app.echo-theme-sage) > header {
+  color: #e9e0f7 !important;
+  background: #0d0a15 !important;
+  border-bottom-color: rgba(165, 131, 224, 0.14) !important;
+}
+
+/* ---------- CONVERSATION HEADER ---------- */
+
+.echo-app .conversation-view {
+  width: 100%;
+  max-width: 820px;
+  gap: 22px;
+  padding: 14px 0 25px;
+}
+
+.echo-app .conversation-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  padding: 0 2px 17px;
+  border-bottom: 1px solid var(--border);
+}
+
+.echo-app .conversation-heading > div {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.echo-app .conversation-heading strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.echo-app .conversation-heading > div > span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* Fix the oversized portrait beside the conversation title. */
+.echo-app .conversation-heading .mini-persona-avatar {
+  position: relative;
+  display: block;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 47px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(var(--theme-rgb), 0.13);
+}
+
+/* Fit the portrait inside its frame instead of letting it overlap text. */
+.echo-app .conversation-heading .mini-persona-avatar .echo-avatar-chat {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: inherit;
+}
+
+.echo-app .conversation-heading .mini-persona-avatar .echo-avatar-status {
+  display: none;
+}
+
+/* ---------- MESSAGE LIST ---------- */
+
+.echo-app .message-list {
+  display: flex;
+  flex-direction: column;
+  align-content: start;
+  gap: 24px;
+  padding: 5px 0 22px;
+}
+
+.echo-app .message-row {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.echo-app .message-row-user {
+  justify-content: flex-end;
+  padding-left: 28px;
+}
+
+/* Compact, consistently sized companion portrait. */
+.echo-app .message-avatar-character {
+  position: relative;
+  display: block;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 47px;
+  min-width: 42px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--panel-raised);
+  box-shadow: 0 4px 15px rgba(var(--theme-rgb), 0.1);
+}
+
+.echo-app .message-avatar-character .echo-avatar-chat {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: inherit;
+}
+
+.echo-app .message-avatar-character .echo-avatar-status {
+  display: none;
+}
+
+/* ---------- MESSAGE CONTENT ---------- */
+
+.echo-app .message-content {
+  display: grid;
+  min-width: 0;
+  max-width: min(86%, 640px);
+  gap: 8px;
+}
+
+.echo-app .message-row-user .message-content {
+  max-width: min(80%, 570px);
+  justify-items: end;
+  align-items: flex-end;
+}
+
+.echo-app .message-meta {
+  display: flex;
+  min-height: 17px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  padding: 0 3px;
+}
+
+.echo-app .message-meta strong {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.echo-app .message-meta span {
+  color: var(--subtle);
+  font-size: 9px;
+}
+
+/* ---------- ASSISTANT MESSAGE BUBBLE ---------- */
+
+.echo-app .message-bubble {
+  max-width: 100%;
+  padding: 14px 17px;
+  border: 1px solid var(--border);
+  border-radius: 5px 16px 16px 16px;
+  color: var(--muted);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-rgb), 0.075),
+    var(--panel) 70%
+  );
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.09),
+    inset 0 1px rgba(255, 255, 255, 0.018);
+  font-size: 12px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+/* ---------- USER MESSAGE BUBBLE ---------- */
+
+.echo-app .message-row-user .message-bubble {
+  border-color: var(--border-strong);
+  border-radius: 16px 5px 16px 16px;
+  color: var(--text);
+  background: rgba(var(--theme-rgb), 0.13);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+  text-align: left;
+}
+
+/* User avatar */
+.echo-app .message-user-avatar {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--panel-raised);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------- THINKING INDICATOR ---------- */
+
+.echo-app .typing-bubble {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 15px 17px;
+  border: 1px solid var(--border);
+  border-radius: 5px 15px 15px 15px;
+  background: var(--panel);
+}
+
+.echo-app .typing-bubble span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--theme-accent, #bba0f7);
+  box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.25);
+}
+
+/* ---------- RESPONSIVE LAYOUT ---------- */
+
+@media (min-width: 1500px) {
+  .echo-app .conversation-view {
+    max-width: 900px;
+  }
+
+  .echo-app .message-bubble {
+    padding: 16px 19px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 700px) {
+  .echo-app .conversation-view {
+    gap: 17px;
+    padding: 8px 0 20px;
+  }
+
+  .echo-app .message-list {
+    gap: 19px;
+  }
+
+  .echo-app .message-row {
+    gap: 9px;
+  }
+
+  .echo-app .message-avatar-character {
+    flex-basis: 36px;
+    width: 36px;
+    height: 41px;
+    min-width: 36px;
+    border-radius: 10px;
+  }
+
+  .echo-app .conversation-heading .mini-persona-avatar {
+    flex-basis: 37px;
+    width: 37px;
+    height: 41px;
+  }
+
+  .echo-app .message-content {
+    max-width: calc(100% - 45px);
+  }
+
+  .echo-app .message-row-user .message-content {
+    max-width: 82%;
+  }
+
+  .echo-app .message-bubble {
+    padding: 11px 12px;
+    border-radius: 5px 13px 13px 13px;
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  .echo-app .message-row-user .message-bubble {
+    border-radius: 13px 5px 13px 13px;
+  }
+
+  .echo-app .conversation-heading strong {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-app .message-avatar-character,
+  .echo-app .message-bubble,
+  .echo-app .typing-bubble {
+    transition: none !important;
+  }
+}
