@@ -183,6 +183,8 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: rgba(var(--theme-rgb), 0.055) !important;
 }
 
+/* Recent conversation dots and selected rows */
+
 .echo-app[class*="echo-theme-"] .recent-indicator {
   background: var(--theme-accent) !important;
   box-shadow: 0 0 7px rgba(var(--theme-rgb), 0.22) !important;
@@ -198,6 +200,8 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: rgba(var(--theme-rgb), 0.07) !important;
   border-color: var(--border-strong) !important;
 }
+
+/* Top information banner */
 
 .echo-app[class*="echo-theme-"] .preview-banner {
   color: var(--text);
@@ -220,7 +224,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 7px rgba(var(--theme-rgb), 0.3) !important;
 }
 
-/* Welcome title and accents */
+/* Welcome title and decorative orb */
 
 .echo-app[class*="echo-theme-"] .welcome-kicker,
 .echo-app[class*="echo-theme-"] .chat-welcome h1 span {
@@ -246,7 +250,9 @@ body:has(.echo-app[class*="echo-theme-"]) {
   color: var(--theme-accent) !important;
 }
 
-/* Starter prompts */
+/* ==========================================
+   STARTER PROMPTS
+   ========================================== */
 
 .echo-app[class*="echo-theme-"] .prompt-card {
   color: var(--text);
@@ -269,7 +275,9 @@ body:has(.echo-app[class*="echo-theme-"]) {
   color: var(--theme-accent) !important;
 }
 
-/* Composer */
+/* ==========================================
+   MESSAGE COMPOSER
+   ========================================== */
 
 .echo-app[class*="echo-theme-"] .composer {
   color: var(--text);
@@ -324,8 +332,6 @@ body:has(.echo-app[class*="echo-theme-"]) {
    PREMIUM PERSONALITY SELECTOR
    ========================================== */
 
-/* Section label */
-
 .echo-app[class*="echo-theme-"] .persona-list-heading {
   display: flex;
   align-items: center;
@@ -352,15 +358,11 @@ body:has(.echo-app[class*="echo-theme-"]) {
   letter-spacing: 0.6px;
 }
 
-/* Better rhythm between all three cards */
-
 .echo-app[class*="echo-theme-"] .persona-list {
   display: grid;
   gap: 10px;
   margin-top: 1px;
 }
-
-/* Premium card surface */
 
 .echo-app[class*="echo-theme-"] .persona-option {
   position: relative;
@@ -397,8 +399,6 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 7px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* Selected card — subtle glow, not an overbright panel */
-
 .echo-app[class*="echo-theme-"] .persona-selected {
   border-color: var(--theme-accent) !important;
   background: linear-gradient(
@@ -423,7 +423,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   content: "";
 }
 
-/* Portrait frame */
+/* Portrait frames in the personality selector */
 
 .echo-app[class*="echo-theme-"] .persona-avatar-character {
   position: relative;
@@ -452,9 +452,6 @@ body:has(.echo-app[class*="echo-theme-"]) {
   border-radius: inherit;
 }
 
-/* Keep the portrait as the focus inside small selector cards.
-   Remove the floating status label and decorative particle layers. */
-
 .echo-app .persona-avatar-character .echo-avatar-halo,
 .echo-app .persona-avatar-character .echo-avatar-ring,
 .echo-app .persona-avatar-character .echo-avatar-particle,
@@ -468,7 +465,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   object-position: center 28% !important;
 }
 
-/* Text column */
+/* Selector text */
 
 .echo-app[class*="echo-theme-"] .persona-info {
   display: flex;
@@ -501,7 +498,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   white-space: nowrap;
 }
 
-/* Individual trait chips */
+/* Separate, readable trait chips */
 
 .echo-app[class*="echo-theme-"] .persona-traits {
   display: flex !important;
@@ -569,8 +566,6 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: var(--theme-accent-strong);
   box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.14);
 }
-
-/* Persona-specific portrait frames */
 
 .echo-app .persona-option-sage .persona-avatar-character {
   border-color: rgba(177, 145, 240, 0.28);
@@ -786,7 +781,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: #397ed5 !important;
 }
 
-/* Preserve original artwork and add restrained theme-matched glow */
+/* Preserve artwork with a gentle persona-specific outer glow */
 
 .echo-app .welcome-trio-selected-sage .welcome-trio-character img {
   filter: drop-shadow(0 0 15px rgba(145, 105, 205, 0.16)) !important;
@@ -803,12 +798,6 @@ body:has(.echo-app[class*="echo-theme-"]) {
 /* ==========================================
    ANIMATED COMPANION PORTRAIT
    ========================================== */
-
-/*
- * The feature-avatar is the existing frame in App.tsx.
- * Let EchoAvatar fill that frame and preserve the portrait's
- * built-in halo, ring, eyelid, mouth and status layers.
- */
 
 .echo-app .selected-persona-art {
   overflow: hidden;
@@ -830,7 +819,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: transparent;
 }
 
-/* Keep the original art visible in its portrait frame */
+/* Preserve original character artwork and framing */
 
 .echo-app .selected-persona-art .echo-avatar-portrait {
   position: absolute;
@@ -843,9 +832,10 @@ body:has(.echo-app[class*="echo-theme-"]) {
   object-position: center top;
   border-radius: inherit;
   transform-origin: center 35%;
+  filter: none !important;
 }
 
-/* Use the existing persona-specific atmosphere */
+/* Ambient layers stay behind the face */
 
 .echo-app .selected-persona-art .echo-avatar-halo {
   z-index: 2;
@@ -862,18 +852,37 @@ body:has(.echo-app[class*="echo-theme-"]) {
   pointer-events: none;
 }
 
-/* Face overlays sit above the artwork */
-
 .echo-app .selected-persona-art .echo-avatar-face-overlay {
   z-index: 5;
   pointer-events: none;
 }
 
-/* Status chip stays readable over the portrait */
+/*
+ * IMPORTANT FIX:
+ * The mouth is drawn as a dark oval at an approximate position.
+ * That position does not align correctly with Nova's facial artwork.
+ * Hide the overlay on the large companion portrait so it cannot
+ * appear as a black hole while speaking. The original PNG stays intact.
+ */
+
+.echo-app .selected-persona-art .echo-avatar-mouth-overlay {
+  display: none !important;
+  opacity: 0 !important;
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent an approximate eyelid overlay from darkening the face */
+
+.echo-app .selected-persona-art .echo-avatar-eye-lid {
+  display: none !important;
+}
+
+/* Status chip */
 
 .echo-app .selected-persona-art .echo-avatar-status {
   position: absolute;
-  z-index: 8;
+  z-index: 10;
   top: 8px;
   right: auto;
   bottom: auto;
@@ -889,7 +898,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   backdrop-filter: blur(10px);
 }
 
-/* Persona-matched status dots */
+/* Match status dots to each companion */
 
 .echo-app.echo-theme-sage .selected-persona-art .echo-avatar-status-dot {
   background: #b69aef;
@@ -906,9 +915,10 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 8px rgba(131, 189, 255, 0.35);
 }
 
-/* Speaking: subtly emphasize the portrait without moving the layout */
+/* Gentle speaking movement: no darkening or face distortion */
 
 .echo-app .selected-persona-art .echo-avatar-state-speaking .echo-avatar-portrait {
+  filter: none !important;
   animation: echo-portrait-speaking 2.8s ease-in-out infinite;
 }
 
@@ -923,32 +933,45 @@ body:has(.echo-app[class*="echo-theme-"]) {
   }
 }
 
-/* Thinking: gently breathe the halo */
+/* Subtle ambient reaction to thinking and listening */
 
 .echo-app .selected-persona-art .echo-avatar-state-thinking .echo-avatar-halo {
-  opacity: 0.9;
+  opacity: 0.65;
+  animation-duration: 2.4s;
+}
+
+.echo-app .selected-persona-art .echo-avatar-state-listening .echo-avatar-halo {
+  opacity: 0.75;
   animation-duration: 1.8s;
 }
 
-/* Listening: a slightly more present halo */
-
-.echo-app .selected-persona-art .echo-avatar-state-listening .echo-avatar-halo {
-  opacity: 1;
-  animation-duration: 1.4s;
-}
-
-/* Speaking: a quicker ambient halo */
-
 .echo-app .selected-persona-art .echo-avatar-state-speaking .echo-avatar-halo {
-  opacity: 1;
-  animation-duration: 0.9s;
+  opacity: 0.7;
+  animation-duration: 1.8s;
 }
 
-.echo-app .selected-persona-art .echo-avatar-state-speaking .echo-avatar-mouth-overlay {
-  opacity: 0.92;
+/* Nova: warm, soft ember glow, never a dark oval */
+
+.echo-app.echo-theme-nova .selected-persona-art .echo-avatar-halo {
+  background: radial-gradient(
+    circle,
+    rgba(255, 139, 72, 0.15),
+    rgba(255, 139, 72, 0.045) 48%,
+    transparent 74%
+  ) !important;
+  filter: blur(14px);
+  opacity: 0.65;
 }
 
-/* Preserve the current dark-card look for all companion states */
+.echo-app.echo-theme-nova .selected-persona-art .echo-avatar-ring {
+  opacity: 0.22;
+}
+
+.echo-app.echo-theme-nova .selected-persona-art .echo-avatar-particle {
+  opacity: 0.55;
+}
+
+/* Card background follows active companion */
 
 .echo-app.echo-theme-sage .selected-persona-art {
   background: #09080f;
