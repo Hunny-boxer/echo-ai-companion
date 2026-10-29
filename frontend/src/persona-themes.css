@@ -857,13 +857,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   pointer-events: none;
 }
 
-/*
- * IMPORTANT FIX:
- * The mouth is drawn as a dark oval at an approximate position.
- * That position does not align correctly with Nova's facial artwork.
- * Hide the overlay on the large companion portrait so it cannot
- * appear as a black hole while speaking. The original PNG stays intact.
- */
+/* Hide the approximate dark mouth overlay on the large portrait */
 
 .echo-app .selected-persona-art .echo-avatar-mouth-overlay {
   display: none !important;
@@ -872,7 +866,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: none !important;
 }
 
-/* Prevent an approximate eyelid overlay from darkening the face */
+/* Hide approximate eyelid overlays that may darken the artwork */
 
 .echo-app .selected-persona-art .echo-avatar-eye-lid {
   display: none !important;
@@ -915,7 +909,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 8px rgba(131, 189, 255, 0.35);
 }
 
-/* Gentle speaking movement: no darkening or face distortion */
+/* Subtle speaking movement without darkening the original art */
 
 .echo-app .selected-persona-art .echo-avatar-state-speaking .echo-avatar-portrait {
   filter: none !important;
@@ -933,7 +927,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   }
 }
 
-/* Subtle ambient reaction to thinking and listening */
+/* Ambient reaction to thinking and listening */
 
 .echo-app .selected-persona-art .echo-avatar-state-thinking .echo-avatar-halo {
   opacity: 0.65;
@@ -950,7 +944,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   animation-duration: 1.8s;
 }
 
-/* Nova: warm, soft ember glow, never a dark oval */
+/* Nova: warm, soft ember glow */
 
 .echo-app.echo-theme-nova .selected-persona-art .echo-avatar-halo {
   background: radial-gradient(
@@ -986,7 +980,260 @@ body:has(.echo-app[class*="echo-theme-"]) {
 }
 
 /* ==========================================
-   RESPONSIVE + ACCESSIBILITY
+   CONVERSATION CHARACTER PORTRAITS
+   Premium portrait frames beside each reply
+   ========================================== */
+
+/* Larger character frame */
+
+.echo-app[class*="echo-theme-"] .message-avatar-character {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 60px;
+  width: 60px;
+  height: 70px;
+  min-width: 60px;
+  min-height: 70px;
+  box-sizing: border-box;
+  padding: 3px;
+  overflow: visible;
+  border: 1px solid var(--border-strong);
+  border-radius: 15px;
+  background: var(--panel-raised);
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px rgba(255, 255, 255, 0.06);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+/* Soft colored aura stays behind the frame */
+
+.echo-app[class*="echo-theme-"] .message-avatar-character::before {
+  position: absolute;
+  z-index: -1;
+  inset: -5px;
+  border-radius: 19px;
+  background: radial-gradient(
+    ellipse,
+    rgba(var(--theme-rgb), 0.3),
+    rgba(var(--theme-rgb), 0.08) 48%,
+    transparent 75%
+  );
+  opacity: 0.65;
+  filter: blur(8px);
+  content: "";
+  pointer-events: none;
+}
+
+/* Small theme-colored corner light */
+
+.echo-app[class*="echo-theme-"] .message-avatar-character::after {
+  position: absolute;
+  z-index: 4;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--panel);
+  border-radius: 50%;
+  background: var(--theme-accent);
+  box-shadow: 0 0 9px rgba(var(--theme-rgb), 0.5);
+  content: "";
+  pointer-events: none;
+}
+
+/* The portrait fills the frame */
+
+.echo-app .message-avatar-character .echo-avatar-chat {
+  position: relative;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+  border: 0;
+  border-radius: 11px;
+  background: var(--panel);
+  box-shadow: none;
+}
+
+/* Keep the original art clear and naturally framed */
+
+.echo-app .message-avatar-character .echo-avatar-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important;
+  object-position: center 27% !important;
+  filter: none !important;
+  transform-origin: center 38%;
+}
+
+/* Remove inaccurate facial overlays from tiny chat portraits */
+
+.echo-app .message-avatar-character .echo-avatar-face-overlay,
+.echo-app .message-avatar-character .echo-avatar-mouth-overlay,
+.echo-app .message-avatar-character .echo-avatar-eye-lid,
+.echo-app .message-avatar-character .echo-avatar-status {
+  display: none !important;
+}
+
+/* Keep small portrait decorations understated */
+
+.echo-app .message-avatar-character .echo-avatar-halo {
+  opacity: 0.2;
+}
+
+.echo-app .message-avatar-character .echo-avatar-ring {
+  opacity: 0.16;
+}
+
+.echo-app .message-avatar-character .echo-avatar-particle {
+  width: 2px;
+  height: 2px;
+  opacity: 0.5;
+}
+
+/* Speaking character gets a brighter themed frame */
+
+.echo-app[class*="echo-theme-"] .message-avatar-character:has(.echo-avatar-state-speaking) {
+  border-color: var(--theme-accent);
+  box-shadow:
+    0 0 0 1px rgba(var(--theme-rgb), 0.12),
+    0 0 18px rgba(var(--theme-rgb), 0.18),
+    0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.echo-app[class*="echo-theme-"] .message-row:not(.message-row-user) {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.echo-app[class*="echo-theme-"] .message-row:not(.message-row-user) .message-avatar-character {
+  margin-top: 3px;
+}
+
+.echo-app[class*="echo-theme-"] .message-content {
+  min-width: 0;
+}
+
+/* Conversation heading portrait */
+
+.echo-app[class*="echo-theme-"] .conversation-heading .mini-persona-avatar {
+  position: relative;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 54px;
+  min-width: 48px;
+  overflow: hidden;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--panel-raised);
+  box-shadow: 0 4px 14px rgba(var(--theme-rgb), 0.12);
+}
+
+.echo-app .conversation-heading .mini-persona-avatar .echo-avatar-chat {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 9px;
+}
+
+/* ==========================================
+   CONVERSATION MESSAGE FORMATTING
+   ========================================== */
+
+.echo-app[class*="echo-theme-"] .message-rich-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.echo-app[class*="echo-theme-"] .message-rich-text strong {
+  color: var(--text);
+  font-weight: 750;
+}
+
+.echo-app[class*="echo-theme-"] .message-rich-text em {
+  color: var(--text);
+  font-style: italic;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-paragraph {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-heading {
+  margin: 2px 0 10px;
+  color: var(--theme-accent);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-ordered-list,
+.echo-app[class*="echo-theme-"] .message-markdown-unordered-list {
+  display: grid;
+  gap: 10px;
+  margin: 5px 0 14px;
+  padding-left: 23px;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-ordered-list li::marker,
+.echo-app[class*="echo-theme-"] .message-markdown-unordered-list li::marker {
+  color: var(--theme-accent);
+  font-weight: 750;
+}
+
+.echo-app[class*="echo-theme-"] .message-markdown-ordered-list li,
+.echo-app[class*="echo-theme-"] .message-markdown-unordered-list li {
+  padding-left: 3px;
+}
+
+.echo-app[class*="echo-theme-"] .message-rich-text a {
+  color: var(--theme-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--theme-rgb), 0.45);
+  text-underline-offset: 3px;
+}
+
+.echo-app[class*="echo-theme-"] .message-inline-code {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.06);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+/* Thinking indicator */
+
+.echo-app[class*="echo-theme-"] .typing-bubble {
+  gap: 6px;
+  padding: 14px 16px;
+  border-color: var(--border);
+  border-radius: 6px 15px 15px 15px;
+  background: var(--panel);
+}
+
+.echo-app[class*="echo-theme-"] .typing-bubble span {
+  background: var(--theme-accent);
+  box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.2);
+}
+
+/* ==========================================
+   RESPONSIVE AND ACCESSIBILITY
    ========================================== */
 
 .echo-app[class*="echo-theme-"] button:focus-visible,
@@ -1053,6 +1300,37 @@ body:has(.echo-app[class*="echo-theme-"]) {
     left: 6px;
     padding: 4px 6px;
     font-size: 8px;
+  }
+
+  .echo-app[class*="echo-theme-"] .message-avatar-character {
+    flex-basis: 46px;
+    width: 46px;
+    height: 55px;
+    min-width: 46px;
+    min-height: 55px;
+    padding: 2px;
+    border-radius: 12px;
+  }
+
+  .echo-app .message-avatar-character .echo-avatar-chat {
+    border-radius: 9px;
+  }
+
+  .echo-app[class*="echo-theme-"] .message-row:not(.message-row-user) {
+    gap: 10px;
+  }
+
+  .echo-app[class*="echo-theme-"] .conversation-heading .mini-persona-avatar {
+    flex-basis: 42px;
+    width: 42px;
+    height: 48px;
+    min-width: 42px;
+  }
+
+  .echo-app[class*="echo-theme-"] .message-markdown-ordered-list,
+  .echo-app[class*="echo-theme-"] .message-markdown-unordered-list {
+    gap: 8px;
+    padding-left: 19px;
   }
 }
 
