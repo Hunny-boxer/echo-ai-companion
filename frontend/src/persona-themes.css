@@ -1,12 +1,12 @@
 
 /* ==========================================
    ECHO PERSONA THEMES
-   Sage: Dark Violet
-   Nova: Dark Ember
-   Atlas: Dark Cyber Blue
+   Sage: Near-black charcoal / violet
+   Nova: Near-black warm charcoal / ember
+   Atlas: Near-black navy / electric blue
    ========================================== */
 
-/* ---------- SAGE: NEAR-BLACK CHARCOAL ---------- */
+/* ---------- SAGE ---------- */
 
 :root:has(.echo-app.echo-theme-sage),
 .echo-app.echo-theme-sage {
@@ -15,14 +15,11 @@
   --panel: #14111c;
   --panel-raised: #191522;
   --panel-hover: #211a2d;
-
   --border: rgba(177, 157, 215, 0.12);
   --border-strong: rgba(177, 145, 240, 0.25);
-
   --text: #f0ebf8;
   --muted: #a69bb9;
   --subtle: #786e89;
-
   --theme-rgb: 145, 105, 205;
   --theme-accent: #b69aef;
   --theme-accent-strong: #8055cb;
@@ -30,7 +27,7 @@
   --theme-button-end: #6945ad;
 }
 
-/* ---------- NOVA: NEAR-BLACK WARM CHARCOAL ---------- */
+/* ---------- NOVA ---------- */
 
 :root:has(.echo-app.echo-theme-nova),
 .echo-app.echo-theme-nova {
@@ -39,14 +36,11 @@
   --panel: #15100e;
   --panel-raised: #1c130f;
   --panel-hover: #281911;
-
   --border: rgba(224, 155, 112, 0.13);
   --border-strong: rgba(239, 151, 91, 0.27);
-
   --text: #f8eee8;
   --muted: #b8a198;
   --subtle: #857068;
-
   --theme-rgb: 205, 104, 53;
   --theme-accent: #e9a16f;
   --theme-accent-strong: #b9582d;
@@ -54,7 +48,7 @@
   --theme-button-end: #8f3e21;
 }
 
-/* ---------- ATLAS: NEAR-BLACK NAVY ---------- */
+/* ---------- ATLAS ---------- */
 
 :root:has(.echo-app.echo-theme-atlas),
 .echo-app.echo-theme-atlas {
@@ -63,14 +57,11 @@
   --panel: #10151e;
   --panel-raised: #151d2a;
   --panel-hover: #1c2a3c;
-
   --border: rgba(117, 169, 233, 0.13);
   --border-strong: rgba(101, 172, 255, 0.28);
-
   --text: #edf4ff;
   --muted: #a3b2c8;
   --subtle: #71829a;
-
   --theme-rgb: 57, 126, 213;
   --theme-accent: #83bdff;
   --theme-accent-strong: #2e7ddb;
@@ -79,18 +70,30 @@
 }
 
 /* ==========================================
-   GLOBAL DASHBOARD SURFACES
+   GLOBAL DARK SURFACES
    ========================================== */
 
 html:has(.echo-app[class*="echo-theme-"]),
 body:has(.echo-app[class*="echo-theme-"]) {
-  color: var(--text);
   background: var(--bg) !important;
+  color: var(--text);
 }
 
 #root > div:has(.echo-app[class*="echo-theme-"]) {
-  color: var(--text);
   background: var(--bg) !important;
+  color: var(--text);
+}
+
+#root > div:has(.echo-app.echo-theme-sage) {
+  background: #09080f !important;
+}
+
+#root > div:has(.echo-app.echo-theme-nova) {
+  background: #0b0807 !important;
+}
+
+#root > div:has(.echo-app.echo-theme-atlas) {
+  background: #070a10 !important;
 }
 
 #root > div:has(.echo-app[class*="echo-theme-"]) > header {
@@ -114,7 +117,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
       transparent 48%
     ),
     var(--bg) !important;
-  transition: color 240ms ease, background 240ms ease;
+  transition: background 240ms ease, color 240ms ease;
 }
 
 .echo-app[class*="echo-theme-"] .sidebar {
@@ -147,7 +150,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
 }
 
 /* ==========================================
-   SHARED ACCENTS FOLLOW THE ACTIVE PERSONA
+   LOGO, NAVIGATION AND HEADER
    ========================================== */
 
 .echo-app[class*="echo-theme-"] .brand-mark {
@@ -184,7 +187,55 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: rgba(var(--theme-rgb), 0.055) !important;
 }
 
-/* The top information banner */
+.echo-app[class*="echo-theme-"] .topbar-icon-button:hover {
+  color: var(--theme-accent) !important;
+  background: rgba(var(--theme-rgb), 0.08) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* ==========================================
+   RECENT CONVERSATIONS
+   Remove fixed violet dots and highlights
+   ========================================== */
+
+.echo-app[class*="echo-theme-"] .recent-indicator {
+  background: var(--theme-accent) !important;
+  box-shadow: 0 0 7px rgba(var(--theme-rgb), 0.22) !important;
+}
+
+.echo-app[class*="echo-theme-"] .recent-conversation {
+  color: var(--text);
+  border-color: transparent;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.echo-app[class*="echo-theme-"] .recent-conversation:hover {
+  background: rgba(var(--theme-rgb), 0.045) !important;
+  border-color: var(--border) !important;
+}
+
+.echo-app[class*="echo-theme-"] .recent-conversation-active,
+.echo-app[class*="echo-theme-"] .recent-conversation[aria-current="page"] {
+  background: rgba(var(--theme-rgb), 0.07) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.echo-app[class*="echo-theme-"] .recent-copy strong {
+  color: var(--muted) !important;
+}
+
+.echo-app[class*="echo-theme-"] .recent-copy small {
+  color: var(--subtle) !important;
+}
+
+.echo-app[class*="echo-theme-"] .muted-number {
+  color: var(--subtle) !important;
+}
+
+/* ==========================================
+   NOTICE BANNER AND STATUS
+   ========================================== */
+
 .echo-app[class*="echo-theme-"] .preview-banner {
   color: var(--text);
   background: linear-gradient(
@@ -207,38 +258,44 @@ body:has(.echo-app[class*="echo-theme-"]) {
   border-color: var(--border-strong) !important;
 }
 
-/* Welcome heading */
+.echo-app[class*="echo-theme-"] .preview-dot {
+  background: var(--theme-accent) !important;
+  box-shadow: 0 0 7px rgba(var(--theme-rgb), 0.32) !important;
+}
+
+/* ==========================================
+   WELCOME HEADING AND DECORATIVE ORB
+   ========================================== */
+
 .echo-app[class*="echo-theme-"] .welcome-kicker,
 .echo-app[class*="echo-theme-"] .chat-welcome h1 span {
   color: var(--theme-accent) !important;
 }
 
-/* Buttons and icon accents */
-.echo-app[class*="echo-theme-"] .topbar-icon-button:hover,
-.echo-app[class*="echo-theme-"] .composer-audio-toggle:hover,
-.echo-app[class*="echo-theme-"] .composer-mic:hover {
+.echo-app[class*="echo-theme-"] .orb-core {
+  background:
+    radial-gradient(circle at 29% 22%, #fff, transparent 32%),
+    linear-gradient(
+      145deg,
+      var(--theme-button-start),
+      var(--theme-button-end)
+    ) !important;
+  box-shadow: 0 0 24px rgba(var(--theme-rgb), 0.2) !important;
+}
+
+.echo-app[class*="echo-theme-"] .orb-ring {
+  border-color: rgba(var(--theme-rgb), 0.25) !important;
+}
+
+.echo-app[class*="echo-theme-"] .orb-spark-one {
   color: var(--theme-accent) !important;
-  border-color: var(--border-strong) !important;
-  background: rgba(var(--theme-rgb), 0.08) !important;
 }
 
-.echo-app[class*="echo-theme-"] .composer-send {
-  color: #fff !important;
-  background: linear-gradient(
-    140deg,
-    var(--theme-button-start),
-    var(--theme-button-end)
-  ) !important;
-  border-color: var(--border-strong) !important;
-  box-shadow: 0 3px 15px rgba(var(--theme-rgb), 0.16) !important;
-}
+/* ==========================================
+   STARTER PROMPTS
+   Keep the existing card layout
+   ========================================== */
 
-.echo-app[class*="echo-theme-"] .composer:focus-within {
-  border-color: var(--theme-accent) !important;
-  box-shadow: 0 0 0 3px rgba(var(--theme-rgb), 0.07) !important;
-}
-
-/* Starter prompt cards: preserve the original layout */
 .echo-app[class*="echo-theme-"] .prompt-card {
   color: var(--text);
   background: rgba(255, 255, 255, 0.012) !important;
@@ -260,7 +317,14 @@ body:has(.echo-app[class*="echo-theme-"]) {
   color: var(--theme-accent) !important;
 }
 
-/* Conversation messages */
+/* ==========================================
+   CONVERSATION MESSAGES
+   ========================================== */
+
+.echo-app[class*="echo-theme-"] .conversation-heading {
+  border-bottom-color: var(--border) !important;
+}
+
 .echo-app[class*="echo-theme-"] .message-bubble,
 .echo-app[class*="echo-theme-"] .typing-bubble {
   color: var(--muted);
@@ -278,14 +342,93 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: var(--theme-accent) !important;
 }
 
-/* Companion card, status, and selection */
+/* ==========================================
+   MESSAGE COMPOSER AND VOICE CONTROLS
+   ========================================== */
+
+.echo-app[class*="echo-theme-"] .composer {
+  color: var(--text);
+  background: var(--panel-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer:focus-within {
+  border-color: var(--theme-accent) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-rgb), 0.07) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-plus {
+  color: var(--theme-accent) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-input {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-input::placeholder {
+  color: var(--subtle) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle,
+.echo-app[class*="echo-theme-"] .composer-mic {
+  color: var(--muted) !important;
+  background: rgba(var(--theme-rgb), 0.045) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle:hover,
+.echo-app[class*="echo-theme-"] .composer-mic:hover {
+  color: var(--theme-accent) !important;
+  background: rgba(var(--theme-rgb), 0.1) !important;
+  border-color: var(--theme-accent) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle-active {
+  color: var(--theme-accent) !important;
+  background: rgba(var(--theme-rgb), 0.1) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: none !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-send {
+  color: #fff !important;
+  background: linear-gradient(
+    140deg,
+    var(--theme-button-start),
+    var(--theme-button-end)
+  ) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: 0 3px 12px rgba(var(--theme-rgb), 0.1) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-send:hover:not(:disabled) {
+  box-shadow: 0 4px 15px rgba(var(--theme-rgb), 0.18) !important;
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle:focus-visible,
+.echo-app[class*="echo-theme-"] .composer-mic:focus-visible,
+.echo-app[class*="echo-theme-"] .composer-send:focus-visible {
+  outline-color: var(--theme-accent) !important;
+}
+
+.echo-app[class*="echo-theme-"] .footnote-divider {
+  color: var(--subtle) !important;
+}
+
+/* ==========================================
+   COMPANION CARD AND PERSONALITY SELECTION
+   ========================================== */
+
 .echo-app[class*="echo-theme-"] .companion-feature {
   color: var(--text);
-  background: linear-gradient(
-    145deg,
-    var(--panel-raised),
-    var(--panel)
-  ) !important;
+  background:
+    radial-gradient(
+      circle at 75% 14%,
+      rgba(var(--theme-rgb), 0.1),
+      transparent 46%
+    ),
+    linear-gradient(145deg, var(--panel-raised), var(--panel)) !important;
   border-color: var(--border) !important;
 }
 
@@ -293,9 +436,13 @@ body:has(.echo-app[class*="echo-theme-"]) {
   border-color: var(--border) !important;
 }
 
+.echo-app[class*="echo-theme-"] .feature-status {
+  border-color: var(--border) !important;
+}
+
 .echo-app[class*="echo-theme-"] .feature-status span {
   background: var(--theme-accent) !important;
-  box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.35);
+  box-shadow: 0 0 7px rgba(var(--theme-rgb), 0.28) !important;
 }
 
 .echo-app[class*="echo-theme-"] .persona-option {
@@ -305,12 +452,12 @@ body:has(.echo-app[class*="echo-theme-"]) {
 }
 
 .echo-app[class*="echo-theme-"] .persona-option:hover {
-  background: rgba(var(--theme-rgb), 0.06) !important;
+  background: rgba(var(--theme-rgb), 0.045) !important;
   border-color: var(--border-strong) !important;
 }
 
 .echo-app[class*="echo-theme-"] .persona-selected {
-  background: rgba(var(--theme-rgb), 0.09) !important;
+  background: rgba(var(--theme-rgb), 0.07) !important;
   border-color: var(--theme-accent) !important;
 }
 
@@ -321,11 +468,11 @@ body:has(.echo-app[class*="echo-theme-"]) {
 }
 
 /* ==========================================
-   THEME-SPECIFIC THREE-CHARACTER SHOWCASE
-   Dark surfaces; keep artwork unchanged
+   THREE-CHARACTER SHOWCASE
+   Dark background changes with active persona
    ========================================== */
 
-/* Sage: near-black charcoal with violet glow */
+/* Sage showcase */
 .echo-app .welcome-trio-scene.welcome-trio-selected-sage {
   background:
     radial-gradient(
@@ -357,11 +504,13 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 22px rgba(145, 99, 220, 0.14) !important;
 }
 
+.echo-app .welcome-trio-selected-sage .welcome-trio-character.is-selected .welcome-trio-name,
+.echo-app .welcome-trio-selected-sage .welcome-trio-character.is-selected .welcome-trio-role,
 .echo-app .welcome-trio-selected-sage .welcome-trio-character.is-selected > span:last-child {
   color: #b69aef !important;
 }
 
-/* Nova: near-black warm charcoal with ember accents */
+/* Nova showcase */
 .echo-app .welcome-trio-scene.welcome-trio-selected-nova {
   background:
     radial-gradient(
@@ -393,11 +542,13 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 22px rgba(205, 104, 53, 0.13) !important;
 }
 
+.echo-app .welcome-trio-selected-nova .welcome-trio-character.is-selected .welcome-trio-name,
+.echo-app .welcome-trio-selected-nova .welcome-trio-character.is-selected .welcome-trio-role,
 .echo-app .welcome-trio-selected-nova .welcome-trio-character.is-selected > span:last-child {
   color: #e9a16f !important;
 }
 
-/* Atlas: near-black navy with electric-blue accents */
+/* Atlas showcase */
 .echo-app .welcome-trio-scene.welcome-trio-selected-atlas {
   background:
     radial-gradient(
@@ -429,11 +580,13 @@ body:has(.echo-app[class*="echo-theme-"]) {
   box-shadow: 0 0 22px rgba(57, 126, 213, 0.14) !important;
 }
 
+.echo-app .welcome-trio-selected-atlas .welcome-trio-character.is-selected .welcome-trio-name,
+.echo-app .welcome-trio-selected-atlas .welcome-trio-character.is-selected .welcome-trio-role,
 .echo-app .welcome-trio-selected-atlas .welcome-trio-character.is-selected > span:last-child {
   color: #83bdff !important;
 }
 
-/* Theme the orbit rings in the showcase */
+/* Match orbit rings to the selected companion */
 .echo-app .welcome-trio-selected-sage > div[aria-hidden="true"] > span:nth-of-type(-n+2) {
   border-color: rgba(177, 145, 240, 0.22) !important;
 }
@@ -446,7 +599,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   border-color: rgba(101, 172, 255, 0.22) !important;
 }
 
-/* Theme the background glow lights */
+/* Match ambient glows to the selected companion */
 .echo-app .welcome-trio-selected-sage > div[aria-hidden="true"] > span:nth-of-type(n+3) {
   background: #9169cd !important;
 }
@@ -459,7 +612,7 @@ body:has(.echo-app[class*="echo-theme-"]) {
   background: #397ed5 !important;
 }
 
-/* Keep each companion's artwork unchanged; recolor only its glow */
+/* Preserve the artwork; tint only the outer image glow */
 .echo-app .welcome-trio-selected-sage .welcome-trio-character img {
   filter: drop-shadow(0 0 15px rgba(145, 105, 205, 0.16)) !important;
 }
@@ -472,11 +625,24 @@ body:has(.echo-app[class*="echo-theme-"]) {
   filter: drop-shadow(0 0 15px rgba(57, 126, 213, 0.17)) !important;
 }
 
-/* Smooth switching; preserve reduced-motion preference */
+/* ==========================================
+   ACCESSIBILITY AND SMOOTH TRANSITIONS
+   ========================================== */
+
+.echo-app[class*="echo-theme-"] button:focus-visible,
+.echo-app[class*="echo-theme-"] input:focus-visible {
+  outline-color: var(--theme-accent) !important;
+}
+
+.echo-app[class*="echo-theme-"] ::selection {
+  background: rgba(var(--theme-rgb), 0.35);
+}
+
 .echo-app[class*="echo-theme-"] .sidebar,
 .echo-app[class*="echo-theme-"] .topbar,
 .echo-app[class*="echo-theme-"] .companion-panel,
 .echo-app[class*="echo-theme-"] .preview-banner,
+.echo-app[class*="echo-theme-"] .composer,
 .echo-app[class*="echo-theme-"] .companion-feature,
 .echo-app[class*="echo-theme-"] .persona-option,
 .echo-app .welcome-trio-scene,
