@@ -1,10 +1,587 @@
 
-/* ===========================================
-   SELECTED COMPANION — CHARACTER SHOWCASE
-   Recolors the whole three-character scene.
-   =========================================== */
+/* ==========================================
+   ECHO PERSONA THEMES + SIDEBAR POLISH
+   Sage: Violet | Nova: Ember | Atlas: Blue
+   ========================================== */
 
-/* SAGE: violet atmosphere */
+/* ---------- SAGE: MYSTIC VIOLET ---------- */
+
+:root:has(.echo-app.echo-theme-sage),
+.echo-app.echo-theme-sage {
+  --bg: #0a0613;
+  --sidebar: #140b22;
+  --panel: #1a102b;
+  --panel-raised: #28183d;
+  --panel-hover: #33214d;
+  --border: rgba(183, 147, 255, 0.2);
+  --border-strong: rgba(193, 164, 255, 0.4);
+  --text: #f0eaff;
+  --muted: #b3a5ca;
+  --subtle: #847495;
+  --theme-rgb: 168, 105, 255;
+  --theme-accent: #c5a7ff;
+  --theme-accent-strong: #8052df;
+  --theme-button-start: #c5a7ff;
+  --theme-button-end: #7548d4;
+}
+
+/* ---------- NOVA: SOLAR EMBER ---------- */
+
+:root:has(.echo-app.echo-theme-nova),
+.echo-app.echo-theme-nova {
+  --bg: #100703;
+  --sidebar: #1c0d08;
+  --panel: #25120c;
+  --panel-raised: #35190f;
+  --panel-hover: #452113;
+  --border: rgba(255, 157, 100, 0.22);
+  --border-strong: rgba(255, 174, 119, 0.42);
+  --text: #fff0e7;
+  --muted: #d0aa99;
+  --subtle: #987568;
+  --theme-rgb: 255, 112, 46;
+  --theme-accent: #ffc08b;
+  --theme-accent-strong: #dd5b2d;
+  --theme-button-start: #ffc18a;
+  --theme-button-end: #d6532e;
+}
+
+/* ---------- ATLAS: CYBER BLUE ---------- */
+
+:root:has(.echo-app.echo-theme-atlas),
+.echo-app.echo-theme-atlas {
+  --bg: #060b15;
+  --sidebar: #081528;
+  --panel: #0d1b30;
+  --panel-raised: #132947;
+  --panel-hover: #1c385c;
+  --border: rgba(104, 171, 255, 0.22);
+  --border-strong: rgba(111, 180, 255, 0.42);
+  --text: #eaf4ff;
+  --muted: #a3bad5;
+  --subtle: #7289a8;
+  --theme-rgb: 48, 143, 255;
+  --theme-accent: #91ceff;
+  --theme-accent-strong: #326dd9;
+  --theme-button-start: #91ceff;
+  --theme-button-end: #3268d7;
+}
+
+/* ---------- GLOBAL DASHBOARD ---------- */
+
+html:has(.echo-app[class*="echo-theme-"]),
+body:has(.echo-app[class*="echo-theme-"]) {
+  background: var(--bg);
+}
+
+.echo-app[class*="echo-theme-"] {
+  color: var(--text);
+  background:
+    radial-gradient(
+      ellipse at 55% 8%,
+      rgba(var(--theme-rgb), 0.2),
+      transparent 48%
+    ),
+    linear-gradient(135deg, var(--bg), var(--sidebar) 65%, var(--bg));
+  transition: background 280ms ease, color 280ms ease;
+}
+
+.echo-app[class*="echo-theme-"] .sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--theme-rgb), 0.17),
+      var(--sidebar) 72%
+    );
+  border-right-color: var(--border-strong);
+}
+
+.echo-app[class*="echo-theme-"] .main-layout {
+  background: transparent;
+}
+
+.echo-app[class*="echo-theme-"] .topbar {
+  background: linear-gradient(
+    100deg,
+    rgba(var(--theme-rgb), 0.16),
+    var(--bg) 90%
+  );
+  border-bottom-color: var(--border-strong);
+}
+
+.echo-app[class*="echo-theme-"] .chat-column {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(var(--theme-rgb), 0.11),
+    transparent 65%
+  );
+  border-right-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .companion-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--theme-rgb), 0.14),
+    var(--bg) 95%
+  );
+}
+
+/* Signed-in header above the dashboard */
+#root > div:has(.echo-app.echo-theme-sage) {
+  background: #0a0613;
+}
+
+#root > div:has(.echo-app.echo-theme-nova) {
+  background: #100703;
+}
+
+#root > div:has(.echo-app.echo-theme-atlas) {
+  background: #060b15;
+}
+
+#root > div:has(.echo-app[class*="echo-theme-"]) > header {
+  color: var(--text) !important;
+  background: var(--sidebar) !important;
+  border-bottom-color: var(--border-strong) !important;
+}
+
+#root > div:has(.echo-app[class*="echo-theme-"]) > header button {
+  color: var(--text) !important;
+  background: var(--panel-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* ---------- BRAND AND NAVIGATION ---------- */
+
+.echo-app[class*="echo-theme-"] .brand-mark {
+  border-color: var(--border-strong);
+  background: linear-gradient(
+    145deg,
+    var(--theme-button-start),
+    var(--theme-button-end)
+  );
+  box-shadow: 0 5px 24px rgba(var(--theme-rgb), 0.3);
+}
+
+.echo-app[class*="echo-theme-"] .brand-wordmark span,
+.echo-app[class*="echo-theme-"] .nav-link-active .nav-icon,
+.echo-app[class*="echo-theme-"] .panel-star {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .new-chat-button {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.14);
+}
+
+.echo-app[class*="echo-theme-"] .new-chat-button:hover {
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.23);
+}
+
+.echo-app[class*="echo-theme-"] .nav-link-active {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.17);
+}
+
+.echo-app[class*="echo-theme-"] .nav-link:hover {
+  background: rgba(var(--theme-rgb), 0.09);
+}
+
+/* ---------- NOTICE AND PAGE ACCENTS ---------- */
+
+.echo-app[class*="echo-theme-"] .preview-banner {
+  border-color: var(--border-strong);
+  background: linear-gradient(
+    100deg,
+    rgba(var(--theme-rgb), 0.19),
+    rgba(var(--theme-rgb), 0.025)
+  );
+}
+
+.echo-app[class*="echo-theme-"] .preview-banner strong,
+.echo-app[class*="echo-theme-"] .banner-sparkle,
+.echo-app[class*="echo-theme-"] .preview-pill {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .preview-pill,
+.echo-app[class*="echo-theme-"] .banner-status {
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.1);
+}
+
+.echo-app[class*="echo-theme-"] .preview-dot {
+  background: var(--theme-accent);
+  box-shadow: 0 0 10px rgba(var(--theme-rgb), 0.9);
+}
+
+/* ---------- WELCOME SCREEN ---------- */
+
+.echo-app[class*="echo-theme-"] .welcome-kicker,
+.echo-app[class*="echo-theme-"] .chat-welcome h1 span {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .orb-core {
+  background:
+    radial-gradient(circle at 29% 22%, #fff 0, transparent 32%),
+    linear-gradient(
+      145deg,
+      var(--theme-button-start),
+      var(--theme-button-end)
+    );
+  box-shadow: 0 0 34px rgba(var(--theme-rgb), 0.4);
+}
+
+.echo-app[class*="echo-theme-"] .orb-ring {
+  border-color: rgba(var(--theme-rgb), 0.4);
+}
+
+.echo-app[class*="echo-theme-"] .orb-spark-one {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .prompt-card {
+  border-color: var(--border);
+  background: rgba(var(--theme-rgb), 0.055);
+}
+
+.echo-app[class*="echo-theme-"] .prompt-card:hover {
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.14);
+}
+
+.echo-app[class*="echo-theme-"] .prompt-card-icon {
+  color: var(--theme-accent);
+  border-color: var(--border);
+  background: rgba(var(--theme-rgb), 0.15);
+}
+
+/* ==========================================
+   PERSONALITY SIDEBAR — VISUAL REDESIGN
+   ========================================== */
+
+/* Section heading */
+.echo-app[class*="echo-theme-"] .persona-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 2px 2px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.25px;
+}
+
+.echo-app[class*="echo-theme-"] .persona-list-heading span:last-child {
+  display: grid;
+  min-width: 26px;
+  height: 22px;
+  place-items: center;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.09);
+  font-size: 9px;
+}
+
+/* Even spacing between personality cards */
+.echo-app[class*="echo-theme-"] .persona-list {
+  display: grid;
+  gap: 9px;
+}
+
+/* Each companion card */
+.echo-app[class*="echo-theme-"] .persona-option {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 76px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  background: linear-gradient(
+    115deg,
+    rgba(var(--theme-rgb), 0.055),
+    rgba(255, 255, 255, 0.012)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+  text-align: left;
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.echo-app[class*="echo-theme-"] .persona-option:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.1);
+}
+
+/* Clear selected state */
+.echo-app[class*="echo-theme-"] .persona-selected {
+  border-color: var(--theme-accent) !important;
+  background:
+    linear-gradient(
+      115deg,
+      rgba(var(--theme-rgb), 0.22),
+      rgba(var(--theme-rgb), 0.055)
+    ) !important;
+  box-shadow:
+    0 5px 20px rgba(var(--theme-rgb), 0.1),
+    inset 0 0 0 1px rgba(var(--theme-rgb), 0.06);
+}
+
+.echo-app[class*="echo-theme-"] .persona-selected::before {
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--theme-accent);
+  box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.55);
+  content: "";
+}
+
+/* Character portrait: larger, neatly cropped, softly framed */
+.echo-app[class*="echo-theme-"] .persona-avatar-character {
+  position: relative;
+  display: grid;
+  flex: 0 0 50px;
+  width: 50px;
+  height: 54px;
+  min-width: 50px;
+  min-height: 54px;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  background: rgba(var(--theme-rgb), 0.12);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+}
+
+.echo-app[class*="echo-theme-"] .persona-avatar-character .echo-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.echo-app[class*="echo-theme-"] .persona-avatar-character .echo-avatar-status {
+  display: none;
+}
+
+/* Text hierarchy and readable roles */
+.echo-app[class*="echo-theme-"] .persona-info {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.echo-app[class*="echo-theme-"] .persona-info strong {
+  max-width: 100%;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: 0.1px;
+}
+
+.echo-app[class*="echo-theme-"] .persona-info small {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trait labels were running together.
+   Separate them into tidy, readable chips. */
+.echo-app[class*="echo-theme-"] .persona-traits {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.echo-app[class*="echo-theme-"] .persona-traits > span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  background: rgba(var(--theme-rgb), 0.07);
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.echo-app[class*="echo-theme-"] .persona-selected .persona-traits > span {
+  border-color: var(--border-strong);
+  color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.1);
+}
+
+/* Attractive selection indicator */
+.echo-app[class*="echo-theme-"] .persona-check {
+  display: grid;
+  flex: 0 0 21px;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: transparent;
+  background: rgba(var(--theme-rgb), 0.05);
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.echo-app[class*="echo-theme-"] .persona-selected .persona-check {
+  border-color: var(--theme-accent-strong);
+  color: #fff;
+  background: var(--theme-accent-strong);
+  box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.2);
+}
+
+/* About the selected personality */
+.echo-app[class*="echo-theme-"] .personality-details {
+  margin-top: 1px;
+  padding: 15px 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-rgb), 0.09),
+    rgba(var(--theme-rgb), 0.025)
+  );
+}
+
+.echo-app[class*="echo-theme-"] .personality-details-heading {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--theme-accent);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.echo-app[class*="echo-theme-"] .personality-details p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+/* Memory card */
+.echo-app[class*="echo-theme-"] .memory-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 0;
+  padding: 14px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(var(--theme-rgb), 0.16),
+      transparent 75%
+    ),
+    var(--panel);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.echo-app[class*="echo-theme-"] .memory-card-icon {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.12);
+  font-size: 18px;
+}
+
+.echo-app[class*="echo-theme-"] .memory-card-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 6px;
+}
+
+.echo-app[class*="echo-theme-"] .memory-card-copy strong {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.echo-app[class*="echo-theme-"] .memory-card-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.echo-app[class*="echo-theme-"] .memory-card-copy > span {
+  margin-top: 2px;
+  color: var(--theme-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.7px;
+  line-height: 1.5;
+}
+
+/* Sidebar footer */
+.echo-app[class*="echo-theme-"] .panel-footer {
+  padding-top: 13px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.echo-app[class*="echo-theme-"] .panel-footer-spark {
+  color: var(--theme-accent);
+}
+
+/* ---------- CHARACTER SHOWCASE ---------- */
+
+/* Sage: violet atmosphere */
 .echo-app .welcome-trio-scene.welcome-trio-selected-sage {
   border-color: rgba(193, 164, 255, 0.48) !important;
   background:
@@ -19,12 +596,10 @@
       transparent 48%
     ),
     linear-gradient(145deg, #1a1030, #0b0716 78%) !important;
-  box-shadow:
-    0 0 35px rgba(139, 78, 255, 0.12),
-    inset 0 0 32px rgba(139, 78, 255, 0.08);
+  box-shadow: 0 0 35px rgba(139, 78, 255, 0.12);
 }
 
-/* NOVA: orange and ember atmosphere */
+/* Nova: orange and ember atmosphere */
 .echo-app .welcome-trio-scene.welcome-trio-selected-nova {
   border-color: rgba(255, 174, 119, 0.48) !important;
   background:
@@ -39,12 +614,10 @@
       transparent 48%
     ),
     linear-gradient(145deg, #28140e, #100805 78%) !important;
-  box-shadow:
-    0 0 35px rgba(255, 112, 46, 0.12),
-    inset 0 0 32px rgba(255, 112, 46, 0.08);
+  box-shadow: 0 0 35px rgba(255, 112, 46, 0.12);
 }
 
-/* ATLAS: electric-blue atmosphere */
+/* Atlas: electric-blue atmosphere */
 .echo-app .welcome-trio-scene.welcome-trio-selected-atlas {
   border-color: rgba(111, 180, 255, 0.5) !important;
   background:
@@ -59,12 +632,9 @@
       transparent 48%
     ),
     linear-gradient(145deg, #101d37, #060b17 78%) !important;
-  box-shadow:
-    0 0 35px rgba(48, 143, 255, 0.14),
-    inset 0 0 32px rgba(48, 143, 255, 0.08);
+  box-shadow: 0 0 35px rgba(48, 143, 255, 0.14);
 }
 
-/* Let the showcase backdrop transition smoothly. */
 .echo-app .welcome-trio-scene {
   transition:
     background 300ms ease,
@@ -72,7 +642,7 @@
     box-shadow 300ms ease;
 }
 
-/* Recolor the two decorative orbital rings. */
+/* Orbital rings */
 .echo-app .welcome-trio-selected-sage
   > div[aria-hidden="true"] > span:nth-of-type(-n+2) {
   border-color: rgba(193, 164, 255, 0.3) !important;
@@ -88,7 +658,7 @@
   border-color: rgba(111, 180, 255, 0.3) !important;
 }
 
-/* Make all ambient glow lights follow the selected companion. */
+/* Ambient lights */
 .echo-app .welcome-trio-selected-sage
   > div[aria-hidden="true"] > span:nth-of-type(n+3) {
   background: #9b68ff !important;
@@ -104,108 +674,105 @@
   background: #398dff !important;
 }
 
-/* Tint the complete set of character cards to match the theme. */
-.echo-app .welcome-trio-selected-sage .welcome-trio-character:not(.is-selected) {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(155, 104, 255, 0.09),
-      rgba(12, 8, 22, 0.82)
-    ) !important;
+/* Unselected cards get a subtle reflection from the active theme */
+.echo-app .welcome-trio-selected-sage
+  .welcome-trio-character:not(.is-selected) {
+  background: linear-gradient(
+    180deg,
+    rgba(155, 104, 255, 0.09),
+    rgba(12, 8, 22, 0.82)
+  ) !important;
 }
 
-.echo-app .welcome-trio-selected-nova .welcome-trio-character:not(.is-selected) {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 122, 56, 0.09),
-      rgba(21, 9, 6, 0.84)
-    ) !important;
+.echo-app .welcome-trio-selected-nova
+  .welcome-trio-character:not(.is-selected) {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 122, 56, 0.09),
+    rgba(21, 9, 6, 0.84)
+  ) !important;
 }
 
-.echo-app .welcome-trio-selected-atlas .welcome-trio-character:not(.is-selected) {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(57, 141, 255, 0.1),
-      rgba(6, 11, 23, 0.84)
-    ) !important;
+.echo-app .welcome-trio-selected-atlas
+  .welcome-trio-character:not(.is-selected) {
+  background: linear-gradient(
+    180deg,
+    rgba(57, 141, 255, 0.1),
+    rgba(6, 11, 23, 0.84)
+  ) !important;
 }
 
-/* Selected SAGE card */
+/* Selected Sage card */
 .echo-app .welcome-trio-selected-sage
   .welcome-trio-character.is-selected {
   border-color: #c5a7ff !important;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(155, 104, 255, 0.32),
-      rgba(21, 12, 38, 0.92)
-    ) !important;
-  box-shadow:
-    0 0 30px rgba(155, 104, 255, 0.25),
-    inset 0 0 24px rgba(155, 104, 255, 0.1) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(155, 104, 255, 0.32),
+    rgba(21, 12, 38, 0.92)
+  ) !important;
+  box-shadow: 0 0 30px rgba(155, 104, 255, 0.25) !important;
 }
 
-.echo-app .welcome-trio-selected-sage
-  .welcome-trio-character.is-selected .welcome-trio-role,
-.echo-app .welcome-trio-selected-sage
-  .welcome-trio-character.is-selected .welcome-trio-name,
-.echo-app .welcome-trio-selected-sage
-  .welcome-trio-character.is-selected > span:last-child {
-  color: #d8c5ff !important;
-}
-
-/* Selected NOVA card */
+/* Selected Nova card */
 .echo-app .welcome-trio-selected-nova
   .welcome-trio-character.is-selected {
   border-color: #ffc08b !important;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 122, 56, 0.32),
-      rgba(34, 15, 9, 0.93)
-    ) !important;
-  box-shadow:
-    0 0 30px rgba(255, 122, 56, 0.25),
-    inset 0 0 24px rgba(255, 122, 56, 0.1) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 122, 56, 0.32),
+    rgba(34, 15, 9, 0.93)
+  ) !important;
+  box-shadow: 0 0 30px rgba(255, 122, 56, 0.25) !important;
 }
 
-.echo-app .welcome-trio-selected-nova
-  .welcome-trio-character.is-selected .welcome-trio-role,
-.echo-app .welcome-trio-selected-nova
-  .welcome-trio-character.is-selected .welcome-trio-name,
-.echo-app .welcome-trio-selected-nova
-  .welcome-trio-character.is-selected > span:last-child {
-  color: #ffd0aa !important;
-}
-
-/* Selected ATLAS card */
+/* Selected Atlas card */
 .echo-app .welcome-trio-selected-atlas
   .welcome-trio-character.is-selected {
   border-color: #91ceff !important;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(57, 141, 255, 0.32),
-      rgba(7, 17, 36, 0.93)
-    ) !important;
-  box-shadow:
-    0 0 30px rgba(57, 141, 255, 0.25),
-    inset 0 0 24px rgba(57, 141, 255, 0.1) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(57, 141, 255, 0.32),
+    rgba(7, 17, 36, 0.93)
+  ) !important;
+  box-shadow: 0 0 30px rgba(57, 141, 255, 0.25) !important;
 }
 
-.echo-app .welcome-trio-selected-atlas
-  .welcome-trio-character.is-selected .welcome-trio-role,
-.echo-app .welcome-trio-selected-atlas
-  .welcome-trio-character.is-selected .welcome-trio-name,
-.echo-app .welcome-trio-selected-atlas
-  .welcome-trio-character.is-selected > span:last-child {
-  color: #b7ddff !important;
+/* Keep hover and keyboard focus visible */
+.echo-app[class*="echo-theme-"] button:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .echo-app[class*="echo-theme-"] .persona-option {
+    min-height: 72px;
+    padding: 9px;
+    gap: 9px;
+  }
+
+  .echo-app[class*="echo-theme-"] .persona-avatar-character {
+    flex-basis: 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 49px;
+    min-height: 49px;
+  }
+
+  .echo-app[class*="echo-theme-"] .persona-info strong {
+    font-size: 11px;
+  }
+
+  .echo-app[class*="echo-theme-"] .persona-traits > span {
+    font-size: 8px;
+    padding: 3px 5px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .echo-app .welcome-trio-scene {
-    transition: none !important;
+  .echo-app[class*="echo-theme-"] *,
+  .echo-app[class*="echo-theme-"] *::before,
+  .echo-app[class*="echo-theme-"] *::after {
+    transition-duration: 0.01ms !important;
   }
 }
