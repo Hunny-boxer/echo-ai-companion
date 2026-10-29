@@ -1,0 +1,407 @@
+
+/* =========================================
+   ECHO PERSONA THEMES
+   Keep this file separate from styles.css.
+   ========================================= */
+
+/* SAGE — MYSTIC VIOLET */
+:root:has(.echo-app.echo-theme-sage),
+.echo-app.echo-theme-sage {
+  --bg: #0b0814;
+  --sidebar: #100b1c;
+  --panel: #171126;
+  --panel-raised: #211532;
+  --panel-hover: #2d1c47;
+  --border: rgba(183, 147, 255, 0.17);
+  --border-strong: rgba(193, 164, 255, 0.32);
+  --text: #f0eaff;
+  --muted: #b3a5ca;
+  --subtle: #847495;
+  --purple: #c0a2ff;
+  --purple-strong: #9263f2;
+
+  --theme-rgb: 164, 115, 255;
+  --theme-accent: #c5a7ff;
+  --theme-accent-strong: #8052df;
+  --theme-button-start: #c5a7ff;
+  --theme-button-end: #7548d4;
+}
+
+/* NOVA — SOLAR EMBER */
+:root:has(.echo-app.echo-theme-nova),
+.echo-app.echo-theme-nova {
+  --bg: #100907;
+  --sidebar: #180d0b;
+  --panel: #20120f;
+  --panel-raised: #2a1711;
+  --panel-hover: #3b2116;
+  --border: rgba(255, 157, 100, 0.17);
+  --border-strong: rgba(255, 174, 119, 0.33);
+  --text: #fff0e7;
+  --muted: #d0aa99;
+  --subtle: #987568;
+  --purple: #ffb27d;
+  --purple-strong: #ed773c;
+
+  --theme-rgb: 255, 130, 59;
+  --theme-accent: #ffc08b;
+  --theme-accent-strong: #dd5b2d;
+  --theme-button-start: #ffc18a;
+  --theme-button-end: #d6532e;
+}
+
+/* ATLAS — CYBER BLUE */
+:root:has(.echo-app.echo-theme-atlas),
+.echo-app.echo-theme-atlas {
+  --bg: #070d18;
+  --sidebar: #0a1120;
+  --panel: #0e1728;
+  --panel-raised: #132139;
+  --panel-hover: #1a2d4c;
+  --border: rgba(104, 171, 255, 0.17);
+  --border-strong: rgba(111, 180, 255, 0.33);
+  --text: #eaf4ff;
+  --muted: #a3bad5;
+  --subtle: #7289a8;
+  --purple: #8ec7ff;
+  --purple-strong: #4088ef;
+
+  --theme-rgb: 67, 148, 255;
+  --theme-accent: #91ceff;
+  --theme-accent-strong: #326dd9;
+  --theme-button-start: #91ceff;
+  --theme-button-end: #3268d7;
+}
+
+/* Overall dashboard background */
+.echo-app[class*="echo-theme-"] {
+  color: var(--text);
+  background:
+    radial-gradient(
+      ellipse at 62% 4%,
+      rgba(var(--theme-rgb), 0.15),
+      transparent 43%
+    ),
+    radial-gradient(
+      ellipse at 90% 76%,
+      rgba(var(--theme-rgb), 0.055),
+      transparent 35%
+    ),
+    var(--bg);
+  transition: background 240ms ease, color 240ms ease;
+}
+
+/* Page, sidebar, navigation and top bar */
+.echo-app[class*="echo-theme-"] .sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--theme-rgb), 0.075),
+      var(--sidebar) 58%
+    );
+  border-right-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .main-layout {
+  background: transparent;
+}
+
+.echo-app[class*="echo-theme-"] .topbar {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--theme-rgb), 0.075),
+    var(--bg) 78%
+  );
+  border-bottom-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .chat-column {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(var(--theme-rgb), 0.045),
+    transparent 62%
+  );
+  border-right-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .companion-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--theme-rgb), 0.07),
+    rgba(var(--theme-rgb), 0.015)
+  );
+}
+
+/* Brand mark and navigation */
+.echo-app[class*="echo-theme-"] .brand-mark {
+  background: linear-gradient(
+    145deg,
+    var(--theme-button-start),
+    var(--theme-button-end)
+  );
+  border-color: var(--border-strong);
+  box-shadow: 0 5px 25px rgba(var(--theme-rgb), 0.24);
+}
+
+.echo-app[class*="echo-theme-"] .brand-wordmark span,
+.echo-app[class*="echo-theme-"] .nav-link-active .nav-icon,
+.echo-app[class*="echo-theme-"] .panel-star {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .new-chat-button {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.105);
+}
+
+.echo-app[class*="echo-theme-"] .new-chat-button:hover {
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.19);
+}
+
+.echo-app[class*="echo-theme-"] .nav-link-active {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.14);
+}
+
+.echo-app[class*="echo-theme-"] .nav-link:hover {
+  background: rgba(var(--theme-rgb), 0.075);
+}
+
+.echo-app[class*="echo-theme-"] .recent-conversation:hover {
+  border-color: var(--border);
+  background: rgba(var(--theme-rgb), 0.065);
+}
+
+/* Signed-in header above the dashboard */
+html:has(.echo-app[class*="echo-theme-"]),
+body:has(.echo-app[class*="echo-theme-"]) {
+  background: var(--bg);
+}
+
+#root > div:has(.echo-app[class*="echo-theme-"]) {
+  color: var(--text);
+  background: var(--bg);
+}
+
+#root > div:has(.echo-app[class*="echo-theme-"]) > header {
+  color: var(--text) !important;
+  background: var(--sidebar) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+#root > div:has(.echo-app[class*="echo-theme-"]) > header button {
+  color: var(--text) !important;
+  background: var(--panel-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* Companion notice and status accents */
+.echo-app[class*="echo-theme-"] .preview-banner {
+  border-color: var(--border-strong);
+  background: linear-gradient(
+    100deg,
+    rgba(var(--theme-rgb), 0.12),
+    rgba(var(--theme-rgb), 0.015)
+  );
+}
+
+.echo-app[class*="echo-theme-"] .preview-banner strong,
+.echo-app[class*="echo-theme-"] .banner-sparkle,
+.echo-app[class*="echo-theme-"] .preview-pill {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .preview-pill,
+.echo-app[class*="echo-theme-"] .banner-status {
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.08);
+}
+
+.echo-app[class*="echo-theme-"] .preview-dot {
+  background: var(--theme-accent);
+  box-shadow: 0 0 9px rgba(var(--theme-rgb), 0.8);
+}
+
+/* Welcome heading and decorative orb */
+.echo-app[class*="echo-theme-"] .welcome-kicker,
+.echo-app[class*="echo-theme-"] .chat-welcome h1 span {
+  color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] .orb-core {
+  background:
+    radial-gradient(circle at 29% 22%, #fff 0, transparent 32%),
+    linear-gradient(
+      145deg,
+      var(--theme-button-start),
+      var(--theme-button-end)
+    );
+  box-shadow: 0 0 28px rgba(var(--theme-rgb), 0.34);
+}
+
+.echo-app[class*="echo-theme-"] .orb-ring {
+  border-color: rgba(var(--theme-rgb), 0.32);
+}
+
+.echo-app[class*="echo-theme-"] .orb-spark-one {
+  color: var(--theme-accent);
+}
+
+/* Starter prompt cards */
+.echo-app[class*="echo-theme-"] .prompt-card {
+  border-color: var(--border);
+  background: rgba(var(--theme-rgb), 0.025);
+}
+
+.echo-app[class*="echo-theme-"] .prompt-card:hover {
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.09);
+}
+
+.echo-app[class*="echo-theme-"] .prompt-card-icon {
+  color: var(--theme-accent);
+  border-color: var(--border);
+  background: rgba(var(--theme-rgb), 0.105);
+}
+
+/* Conversation messages */
+.echo-app[class*="echo-theme-"] .conversation-heading {
+  border-bottom-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .message-bubble,
+.echo-app[class*="echo-theme-"] .typing-bubble {
+  border-color: var(--border);
+  background: var(--panel);
+}
+
+.echo-app[class*="echo-theme-"] .message-row-user .message-bubble {
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.13);
+}
+
+.echo-app[class*="echo-theme-"] .typing-bubble span {
+  background: var(--theme-accent);
+}
+
+/* Message composer, voice controls and send button */
+.echo-app[class*="echo-theme-"] .composer {
+  border-color: var(--border-strong);
+  background: var(--panel-raised);
+}
+
+.echo-app[class*="echo-theme-"] .composer:focus-within {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px rgba(var(--theme-rgb), 0.09);
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle,
+.echo-app[class*="echo-theme-"] .composer-mic {
+  border-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .composer-audio-toggle:hover,
+.echo-app[class*="echo-theme-"] .composer-mic:hover,
+.echo-app[class*="echo-theme-"] .composer-audio-toggle-active {
+  border-color: var(--theme-accent);
+  background: rgba(var(--theme-rgb), 0.14);
+  color: var(--text);
+}
+
+.echo-app[class*="echo-theme-"] .composer-send {
+  border-color: var(--border-strong);
+  background: linear-gradient(
+    140deg,
+    var(--theme-button-start),
+    var(--theme-button-end)
+  );
+  box-shadow: 0 3px 14px rgba(var(--theme-rgb), 0.23);
+}
+
+.echo-app[class*="echo-theme-"] .composer-send:hover:not(:disabled) {
+  box-shadow: 0 5px 20px rgba(var(--theme-rgb), 0.37);
+}
+
+/* Selected companion feature card */
+.echo-app[class*="echo-theme-"] .companion-feature {
+  border-color: var(--border-strong);
+  background:
+    radial-gradient(
+      circle at 75% 14%,
+      rgba(var(--theme-rgb), 0.23),
+      transparent 42%
+    ),
+    linear-gradient(145deg, var(--panel-raised), var(--panel));
+}
+
+.echo-app[class*="echo-theme-"] .feature-orbit {
+  border-color: rgba(var(--theme-rgb), 0.28);
+}
+
+.echo-app[class*="echo-theme-"] .feature-status {
+  border-color: var(--border);
+}
+
+.echo-app[class*="echo-theme-"] .feature-status span {
+  background: var(--theme-accent);
+  box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.75);
+}
+
+/* Personality selector list */
+.echo-app[class*="echo-theme-"] .persona-option {
+  background: rgba(var(--theme-rgb), 0.025);
+}
+
+.echo-app[class*="echo-theme-"] .persona-option:hover,
+.echo-app[class*="echo-theme-"] .persona-selected {
+  border-color: var(--border-strong);
+  background: rgba(var(--theme-rgb), 0.105);
+}
+
+.echo-app[class*="echo-theme-"] .persona-selected .persona-check {
+  border-color: var(--theme-accent-strong);
+  background: var(--theme-accent-strong);
+}
+
+/* Focus outline and scrollbar accents */
+.echo-app[class*="echo-theme-"] button:focus-visible,
+.echo-app[class*="echo-theme-"] input:focus-visible {
+  outline-color: var(--theme-accent);
+}
+
+.echo-app[class*="echo-theme-"] ::selection {
+  background: rgba(var(--theme-rgb), 0.42);
+}
+
+.echo-app[class*="echo-theme-"] ::-webkit-scrollbar-thumb {
+  background: rgba(var(--theme-rgb), 0.26);
+}
+
+.echo-app[class*="echo-theme-"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--theme-rgb), 0.44);
+}
+
+/* Smooth transitions when switching companions */
+.echo-app[class*="echo-theme-"] .sidebar,
+.echo-app[class*="echo-theme-"] .topbar,
+.echo-app[class*="echo-theme-"] .companion-panel,
+.echo-app[class*="echo-theme-"] .preview-banner,
+.echo-app[class*="echo-theme-"] .composer,
+.echo-app[class*="echo-theme-"] .companion-feature,
+.echo-app[class*="echo-theme-"] .persona-option {
+  transition:
+    background 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-app[class*="echo-theme-"] *,
+  .echo-app[class*="echo-theme-"] *::before,
+  .echo-app[class*="echo-theme-"] *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
