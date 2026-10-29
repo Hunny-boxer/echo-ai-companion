@@ -1,128 +1,258 @@
 
 /* ==========================================
-   SAGE — TESTPULSE-INSPIRED DARK THEME
-   Near-black surfaces, restrained violet glow
+   NOVA + ATLAS — DARK DASHBOARD OVERRIDES
+   Same deep darkness as Sage / TestPulse
    ========================================== */
 
-:root:has(.echo-app.echo-theme-sage),
-.echo-app.echo-theme-sage {
-  --bg: #09080f;
-  --sidebar: #0d0b14;
-  --panel: #14111c;
-  --panel-raised: #191522;
-  --panel-hover: #211a2d;
+/* ---------- NOVA: DARK SOLAR EMBER ---------- */
 
-  --border: rgba(177, 157, 215, 0.12);
-  --border-strong: rgba(177, 145, 240, 0.25);
+:root:has(.echo-app.echo-theme-nova),
+.echo-app.echo-theme-nova {
+  --bg: #0b0807;
+  --sidebar: #110b09;
+  --panel: #15100e;
+  --panel-raised: #1c130f;
+  --panel-hover: #281911;
 
-  --text: #f0ebf8;
-  --muted: #a69bb9;
-  --subtle: #786e89;
+  --border: rgba(224, 155, 112, 0.13);
+  --border-strong: rgba(239, 151, 91, 0.27);
 
-  --theme-rgb: 145, 105, 205;
-  --theme-accent: #b69aef;
-  --theme-accent-strong: #8055cb;
-  --theme-button-start: #a98ae6;
-  --theme-button-end: #6945ad;
+  --text: #f8eee8;
+  --muted: #b8a198;
+  --subtle: #857068;
+
+  --theme-rgb: 205, 104, 53;
+  --theme-accent: #e9a16f;
+  --theme-accent-strong: #b9582d;
+  --theme-button-start: #e99b67;
+  --theme-button-end: #8f3e21;
 }
 
-/* Main application: remove the bright purple wash. */
-.echo-app.echo-theme-sage {
-  background: #09080f !important;
-  background-image:
-    radial-gradient(
-      ellipse at 55% 0%,
-      rgba(117, 78, 170, 0.055),
-      transparent 48%
-    ) !important;
-}
-
-/* Sidebar */
-.echo-app.echo-theme-sage .sidebar {
-  background: #0d0b14 !important;
-  border-right-color: rgba(177, 157, 215, 0.12) !important;
-}
-
-/* Top navigation */
-.echo-app.echo-theme-sage .topbar {
-  background: #0b0912 !important;
-  border-bottom-color: rgba(177, 157, 215, 0.12) !important;
-}
-
-/* Main conversation workspace */
-.echo-app.echo-theme-sage .main-layout,
-.echo-app.echo-theme-sage .chat-column {
-  background: #09080f !important;
-}
-
-/* Right companion sidebar */
-.echo-app.echo-theme-sage .companion-panel {
-  background: #0d0a15 !important;
-  border-left-color: rgba(177, 157, 215, 0.12);
-}
-
-/* Header above the application */
-html:has(.echo-app.echo-theme-sage),
-body:has(.echo-app.echo-theme-sage) {
-  background: #09080f !important;
-}
-
-#root > div:has(.echo-app.echo-theme-sage) {
-  background: #09080f !important;
-}
-
-#root > div:has(.echo-app.echo-theme-sage) > header {
-  background: #0d0b14 !important;
-  border-bottom-color: rgba(177, 157, 215, 0.12) !important;
-}
-
-/* Subtle banner instead of a bright purple panel */
-.echo-app.echo-theme-sage .preview-banner {
-  background: linear-gradient(
-    105deg,
-    rgba(117, 78, 170, 0.1),
-    #100d17 85%
-  ) !important;
-  border-color: rgba(177, 157, 215, 0.17) !important;
-}
-
-.echo-app.echo-theme-sage .preview-banner strong,
-.echo-app.echo-theme-sage .banner-sparkle {
-  color: #b69aef !important;
-}
-
-/* Deep, restrained backdrop behind the three characters */
-.echo-app .welcome-trio-scene.welcome-trio-selected-sage {
+/* Dark Nova application background */
+.echo-app.echo-theme-nova {
   background:
     radial-gradient(
-      ellipse at 50% 50%,
-      rgba(105, 68, 165, 0.16),
-      transparent 64%
+      ellipse at 55% 0%,
+      rgba(158, 74, 35, 0.075),
+      transparent 46%
     ),
-    linear-gradient(145deg, #15101e, #09080f 78%) !important;
-  border-color: rgba(177, 145, 240, 0.24) !important;
-  box-shadow: 0 0 28px rgba(105, 68, 165, 0.07) !important;
+    #0b0807 !important;
 }
 
-/* Dark companion card with a soft violet edge */
-.echo-app.echo-theme-sage .companion-feature {
+/* Nova sidebar */
+.echo-app.echo-theme-nova .sidebar {
+  background: #110b09 !important;
+  border-right-color: rgba(224, 155, 112, 0.12) !important;
+}
+
+/* Nova top navigation */
+.echo-app.echo-theme-nova .topbar {
+  background: #0d0908 !important;
+  border-bottom-color: rgba(224, 155, 112, 0.12) !important;
+}
+
+/* Nova workspace */
+.echo-app.echo-theme-nova .main-layout,
+.echo-app.echo-theme-nova .chat-column {
+  background: #0b0807 !important;
+}
+
+/* Nova companion sidebar */
+.echo-app.echo-theme-nova .companion-panel {
+  background: #100a08 !important;
+  border-left-color: rgba(224, 155, 112, 0.12) !important;
+}
+
+/* Signed-in header outside the app */
+html:has(.echo-app.echo-theme-nova),
+body:has(.echo-app.echo-theme-nova) {
+  background: #0b0807 !important;
+}
+
+#root > div:has(.echo-app.echo-theme-nova) {
+  background: #0b0807 !important;
+}
+
+#root > div:has(.echo-app.echo-theme-nova) > header {
+  color: #f8eee8 !important;
+  background: #110b09 !important;
+  border-bottom-color: rgba(224, 155, 112, 0.12) !important;
+}
+
+/* Nova notice banner */
+.echo-app.echo-theme-nova .preview-banner {
+  background: linear-gradient(
+    105deg,
+    rgba(158, 74, 35, 0.1),
+    #100c0a 85%
+  ) !important;
+  border-color: rgba(224, 155, 112, 0.16) !important;
+}
+
+.echo-app.echo-theme-nova .preview-banner strong,
+.echo-app.echo-theme-nova .banner-sparkle {
+  color: #e9a16f !important;
+}
+
+/* Dark Nova companion feature card */
+.echo-app.echo-theme-nova .companion-feature {
   background:
     radial-gradient(
       circle at 75% 14%,
-      rgba(117, 78, 170, 0.12),
+      rgba(190, 90, 43, 0.12),
       transparent 46%
     ),
-    linear-gradient(145deg, #181321, #100d17) !important;
-  border-color: rgba(177, 157, 215, 0.16) !important;
+    linear-gradient(145deg, #1b120f, #100c0a) !important;
+  border-color: rgba(224, 155, 112, 0.16) !important;
 }
 
-/* Darker starter cards */
-.echo-app.echo-theme-sage .prompt-card {
+/* Nova starter cards */
+.echo-app.echo-theme-nova .prompt-card {
   background: rgba(255, 255, 255, 0.012) !important;
-  border-color: rgba(177, 157, 215, 0.12) !important;
+  border-color: rgba(224, 155, 112, 0.12) !important;
 }
 
-.echo-app.echo-theme-sage .prompt-card:hover {
-  background: rgba(117, 78, 170, 0.09) !important;
-  border-color: rgba(177, 145, 240, 0.3) !important;
+.echo-app.echo-theme-nova .prompt-card:hover {
+  background: rgba(190, 90, 43, 0.085) !important;
+  border-color: rgba(239, 151, 91, 0.28) !important;
+}
+
+/* Nova three-character showcase */
+.echo-app .welcome-trio-scene.welcome-trio-selected-nova {
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(175, 76, 31, 0.16),
+      transparent 64%
+    ),
+    linear-gradient(145deg, #19100d, #0b0807 78%) !important;
+  border-color: rgba(239, 151, 91, 0.24) !important;
+  box-shadow: 0 0 28px rgba(175, 76, 31, 0.07) !important;
+}
+
+
+/* ---------- ATLAS: DARK CYBER BLUE ---------- */
+
+:root:has(.echo-app.echo-theme-atlas),
+.echo-app.echo-theme-atlas {
+  --bg: #070a10;
+  --sidebar: #090e17;
+  --panel: #10151e;
+  --panel-raised: #151d2a;
+  --panel-hover: #1c2a3c;
+
+  --border: rgba(117, 169, 233, 0.13);
+  --border-strong: rgba(101, 172, 255, 0.28);
+
+  --text: #edf4ff;
+  --muted: #a3b2c8;
+  --subtle: #71829a;
+
+  --theme-rgb: 57, 126, 213;
+  --theme-accent: #83bdff;
+  --theme-accent-strong: #2e7ddb;
+  --theme-button-start: #83bdff;
+  --theme-button-end: #2456a5;
+}
+
+/* Dark Atlas application background */
+.echo-app.echo-theme-atlas {
+  background:
+    radial-gradient(
+      ellipse at 55% 0%,
+      rgba(42, 91, 157, 0.075),
+      transparent 46%
+    ),
+    #070a10 !important;
+}
+
+/* Atlas sidebar */
+.echo-app.echo-theme-atlas .sidebar {
+  background: #090e17 !important;
+  border-right-color: rgba(117, 169, 233, 0.12) !important;
+}
+
+/* Atlas top navigation */
+.echo-app.echo-theme-atlas .topbar {
+  background: #080b12 !important;
+  border-bottom-color: rgba(117, 169, 233, 0.12) !important;
+}
+
+/* Atlas workspace */
+.echo-app.echo-theme-atlas .main-layout,
+.echo-app.echo-theme-atlas .chat-column {
+  background: #070a10 !important;
+}
+
+/* Atlas companion sidebar */
+.echo-app.echo-theme-atlas .companion-panel {
+  background: #090d15 !important;
+  border-left-color: rgba(117, 169, 233, 0.12) !important;
+}
+
+/* Signed-in header outside the app */
+html:has(.echo-app.echo-theme-atlas),
+body:has(.echo-app.echo-theme-atlas) {
+  background: #070a10 !important;
+}
+
+#root > div:has(.echo-app.echo-theme-atlas) {
+  background: #070a10 !important;
+}
+
+#root > div:has(.echo-app.echo-theme-atlas) > header {
+  color: #edf4ff !important;
+  background: #090e17 !important;
+  border-bottom-color: rgba(117, 169, 233, 0.12) !important;
+}
+
+/* Atlas notice banner */
+.echo-app.echo-theme-atlas .preview-banner {
+  background: linear-gradient(
+    105deg,
+    rgba(42, 91, 157, 0.1),
+    #0d1119 85%
+  ) !important;
+  border-color: rgba(117, 169, 233, 0.16) !important;
+}
+
+.echo-app.echo-theme-atlas .preview-banner strong,
+.echo-app.echo-theme-atlas .banner-sparkle {
+  color: #83bdff !important;
+}
+
+/* Dark Atlas companion feature card */
+.echo-app.echo-theme-atlas .companion-feature {
+  background:
+    radial-gradient(
+      circle at 75% 14%,
+      rgba(42, 105, 180, 0.13),
+      transparent 46%
+    ),
+    linear-gradient(145deg, #151d2a, #0d1119) !important;
+  border-color: rgba(117, 169, 233, 0.16) !important;
+}
+
+/* Atlas starter cards */
+.echo-app.echo-theme-atlas .prompt-card {
+  background: rgba(255, 255, 255, 0.012) !important;
+  border-color: rgba(117, 169, 233, 0.12) !important;
+}
+
+.echo-app.echo-theme-atlas .prompt-card:hover {
+  background: rgba(42, 105, 180, 0.09) !important;
+  border-color: rgba(101, 172, 255, 0.28) !important;
+}
+
+/* Atlas three-character showcase */
+.echo-app .welcome-trio-scene.welcome-trio-selected-atlas {
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(35, 91, 166, 0.17),
+      transparent 64%
+    ),
+    linear-gradient(145deg, #101827, #070a10 78%) !important;
+  border-color: rgba(101, 172, 255, 0.24) !important;
+  box-shadow: 0 0 28px rgba(35, 91, 166, 0.07) !important;
 }
