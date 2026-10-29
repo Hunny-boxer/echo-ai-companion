@@ -19,6 +19,42 @@ function normalizeClipName(name: string): string {
   return name.toLowerCase().replace(/[^a-z]/g, "");
 }
 
+function makeOpaqueMaterial(source: THREE.Material): THREE.Material {
+  const material = source.clone();
+
+  material.transparent = false;
+  material.opacity = 1;
+  material.depthWrite = true;
+  material.blending = THREE.NormalBlending;
+  material.alphaTest = 0;
+
+  // Disable glass-like transmission while retaining the material's
+  // original base color, texture, roughness and metallic properties.
+  if (material instanceof THREE.MeshPhysicalMaterial) {
+    material.transmission = 0;
+    material.thickness = 0;
+  }
+
+  // Some GLB textures contain alpha values even when the material
+  // is marked opaque. Preserve their RGB color data but ignore the
+  // base-color texture's alpha channel.
+  const previousCompile = material.onBeforeCompile.bind(material);
+
+  material.onBeforeCompile = (shader, renderer) => {
+    previousCompile(shader, renderer);
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "diffuseColor *= sampledDiffuseColor;",
+      "diffuseColor.rgb *= sampledDiffuseColor.rgb;"
+    );
+  };
+
+  material.customProgramCacheKey = () => "echo-sage-opaque-v1";
+  material.needsUpdate = true;
+
+  return material;
+}
+
 function SageRig({
   state,
   compact,
@@ -36,34 +72,9 @@ function SageRig({
 
       if (!mesh.isMesh) return;
 
-      const makeSolid = (
-        source: THREE.Material
-      ): THREE.Material => {
-        const material = source.clone();
-
-        // The current model looks ghost-like because its materials
-        // are translucent. Preserve its textures and base colors,
-        // but render the character surfaces as solid.
-        material.transparent = false;
-        material.opacity = 1;
-        material.depthWrite = true;
-        material.blending = THREE.NormalBlending;
-        material.needsUpdate = true;
-
-        // Limit excessive surface glow so the textures remain visible.
-        if (material instanceof THREE.MeshStandardMaterial) {
-          material.emissiveIntensity = Math.min(
-            material.emissiveIntensity,
-            0.35
-          );
-        }
-
-        return material;
-      };
-
       mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(makeSolid)
-        : makeSolid(mesh.material);
+        ? mesh.material.map(makeOpaqueMaterial)
+        : makeOpaqueMaterial(mesh.material);
 
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -93,6 +104,7 @@ function SageRig({
   }, [model, compact]);
 
   const { actions, names } = useAnimations(animations, model);
+
   const activeAction = useRef<THREE.AnimationAction | null>(null);
   const root = useRef<THREE.Group | null>(null);
 
@@ -107,12 +119,8 @@ function SageRig({
     const wanted = normalizeClipName(requested);
 
     const clipName =
-      names.find(
-        (name) => normalizeClipName(name) === wanted
-      ) ??
-      names.find(
-        (name) => normalizeClipName(name) === "idle"
-      ) ??
+      names.find((name) => normalizeClipName(name) === wanted) ??
+      names.find((name) => normalizeClipName(name) === "idle") ??
       names[0];
 
     const next = clipName ? actions[clipName] : undefined;
