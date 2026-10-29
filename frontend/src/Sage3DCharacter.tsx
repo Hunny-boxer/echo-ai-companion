@@ -27,51 +27,12 @@ function SageRig({
 }) {
   const { scene, animations } = useGLTF(MODEL_URL);
 
-  const model = useMemo(() => {
-    const copy = cloneSkeleton(scene) as THREE.Group;
-    const violetGlow = new THREE.Color("#8b5cff");
-
-    copy.traverse((object) => {
-      const mesh = object as THREE.Mesh;
-
-      if (!mesh.isMesh) return;
-
-      const enhanceMaterial = (
-        source: THREE.Material
-      ): THREE.Material => {
-        const material = source.clone();
-
-        // Preserve the animated GLB's original textures and colors.
-        // Add a violet emission to make the character glow.
-        if (material instanceof THREE.MeshStandardMaterial) {
-          material.emissive.lerp(violetGlow, 0.4);
-          material.emissiveIntensity = Math.max(
-            material.emissiveIntensity,
-            0.7
-          );
-        }
-
-        // Keep holographic materials visible without making opaque
-        // surfaces unnecessarily transparent.
-        if (material.transparent) {
-          material.opacity = Math.max(material.opacity, 0.88);
-          material.depthWrite = false;
-        }
-
-        material.needsUpdate = true;
-        return material;
-      };
-
-      mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(enhanceMaterial)
-        : enhanceMaterial(mesh.material);
-
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    });
-
-    return copy;
-  }, [scene]);
+  // Preserve the original GLB materials and textures.
+  // Do not forcibly change opacity, emissive color or transparency.
+  const model = useMemo(
+    () => cloneSkeleton(scene) as THREE.Group,
+    [scene]
+  );
 
   const framing = useMemo(() => {
     model.updateMatrixWorld(true);
@@ -80,9 +41,7 @@ function SageRig({
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
 
-    // Fit Sage to the available height rather than the model's
-    // potentially wide robes or accessories.
-    const targetHeight = compact ? 1.45 : 1.85;
+    const targetHeight = compact ? 1.42 : 1.85;
     const scale = targetHeight / Math.max(size.y, 0.001);
 
     return {
@@ -109,7 +68,6 @@ function SageRig({
 
     const wanted = normalizeClipName(requested);
 
-    // Match clip names flexibly and fall back to an available clip.
     const clipName =
       names.find((name) => normalizeClipName(name) === wanted) ??
       names.find((name) => normalizeClipName(name) === "idle") ??
@@ -149,10 +107,10 @@ function SageRig({
 
     if (!root.current) return;
 
-    root.current.position.y = Math.sin(time * 1.15) * 0.006;
+    root.current.position.y = Math.sin(time * 1.15) * 0.005;
     root.current.rotation.y =
       Math.sin(time * 0.42) *
-      (state === "speaking" ? 0.025 : 0.035);
+      (state === "speaking" ? 0.02 : 0.03);
   });
 
   return (
@@ -182,7 +140,7 @@ function HologramPlatform() {
         <meshBasicMaterial
           color="#6438ec"
           transparent
-          opacity={0.12}
+          opacity={0.1}
           depthWrite={false}
         />
       </mesh>
@@ -193,7 +151,7 @@ function HologramPlatform() {
           color="#58f5ff"
           side={THREE.DoubleSide}
           transparent
-          opacity={0.8}
+          opacity={0.7}
           depthWrite={false}
         />
       </mesh>
@@ -203,7 +161,7 @@ function HologramPlatform() {
         <meshBasicMaterial
           color="#58f5ff"
           transparent
-          opacity={0.75}
+          opacity={0.7}
           depthWrite={false}
         />
       </mesh>
@@ -213,7 +171,7 @@ function HologramPlatform() {
         <meshBasicMaterial
           color="#ad91ff"
           transparent
-          opacity={0.75}
+          opacity={0.7}
           depthWrite={false}
         />
       </mesh>
@@ -235,7 +193,7 @@ export default function Sage3DCharacter({
     borderRadius: compact ? 12 : 18,
     background: compact
       ? "transparent"
-      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.28), transparent 65%), linear-gradient(160deg,#241437,#0b0812)",
+      : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.2), transparent 65%), linear-gradient(160deg,#241437,#0b0812)",
   };
 
   return (
@@ -248,31 +206,31 @@ export default function Sage3DCharacter({
       <Canvas
         dpr={[1, 1.5]}
         camera={{
-          position: [0, compact ? 0.02 : 0.05, compact ? 2.55 : 3.2],
+          position: [0, compact ? 0.02 : 0.05, compact ? 2.65 : 3.2],
           fov: compact ? 34 : 36,
           near: 0.01,
           far: 100,
         }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={1.5} />
+        <ambientLight intensity={0.75} />
 
         <directionalLight
           position={[2, 3, 4]}
-          intensity={2.2}
+          intensity={1.2}
           color="#fff5ff"
         />
 
         <directionalLight
           position={[-3, 1, -2]}
-          intensity={1.5}
-          color="#8a9dff"
+          intensity={0.65}
+          color="#8996ff"
         />
 
         <pointLight
           position={[0, 1, 1.5]}
-          intensity={1.1}
-          color="#b19aff"
+          intensity={0.4}
+          color="#a78bfa"
         />
 
         {!compact && <HologramPlatform />}
