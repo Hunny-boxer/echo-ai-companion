@@ -1,5 +1,12 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
-import type { CSSProperties } from "react";
+
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
+import type { CSSProperties, ErrorInfo, ReactNode } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -7,12 +14,48 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 
 import type { EchoAvatarState } from "./EchoAvatar";
 
-const MODEL_URL = "/models/sage-rigged-animated-balanced.glb";
+// Use the model that is already present in frontend/public/models.
+const MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
 
 type Sage3DCharacterProps = {
   state?: EchoAvatarState;
   compact?: boolean;
 };
+
+type ModelErrorBoundaryProps = {
+  children: ReactNode;
+  fallback: ReactNode;
+};
+
+type ModelErrorBoundaryState = {
+  hasError: boolean;
+};
+
+// A failed model request should not crash the entire app.
+class ModelErrorBoundary extends Component<
+  ModelErrorBoundaryProps,
+  ModelErrorBoundaryState
+> {
+  state: ModelErrorBoundaryState = {
+    hasError: false,
+  };
+
+  static getDerivedStateFromError(): ModelErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Echo Sage 3D model failed to load:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
 
 function normalizeClipName(name: string): string {
   return name.toLowerCase().replace(/[^a-z]/g, "");
@@ -27,37 +70,11 @@ function SageRig({
 }) {
   const { scene, animations } = useGLTF(MODEL_URL);
 
-  const model = useMemo(() => {
-    const copy = cloneSkeleton(scene) as THREE.Group;
-
-    copy.traverse((object) => {
-      const mesh = object as THREE.Mesh;
-      if (!mesh.isMesh) return;
-
-      const prepareMaterial = (source: THREE.Material) => {
-        const material = source.clone();
-
-        // The repaired GLB already defines opaque materials.
-        // Preserve the original textures and corrected surface settings.
-        material.transparent = false;
-        material.opacity = 1;
-        material.depthWrite = true;
-        material.blending = THREE.NormalBlending;
-        material.needsUpdate = true;
-
-        return material;
-      };
-
-      mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(prepareMaterial)
-        : prepareMaterial(mesh.material);
-
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    });
-
-    return copy;
-  }, [scene]);
+  // Preserve the loaded model's original materials and textures.
+  const model = useMemo(
+    () => cloneSkeleton(scene) as THREE.Group,
+    [scene]
+  );
 
   const framing = useMemo(() => {
     model.updateMatrixWorld(true);
@@ -221,6 +238,22 @@ export default function Sage3DCharacter({
       : "radial-gradient(ellipse at 50% 38%, rgba(126,79,210,.2), transparent 65%), linear-gradient(160deg,#241437,#0b0812)",
   };
 
+  const portraitFallback = (
+    <img
+      src="/personas/sage.png"
+      alt="Sage"
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "block",
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        objectPosition: "center top",
+      }}
+    />
+  );
+
   return (
     <div
       className={`sage-3d-character sage-3d-character-${state}`}
@@ -228,42 +261,44 @@ export default function Sage3DCharacter({
       role="img"
       aria-label={`Sage 3D character, ${state}`}
     >
-      <Canvas
-        dpr={[1, 1.5]}
-        camera={{
-          position: [0, compact ? 0.02 : 0.05, compact ? 2.65 : 3.2],
-          fov: compact ? 34 : 36,
-          near: 0.01,
-          far: 100,
-        }}
-        gl={{ alpha: true, antialias: true }}
-      >
-        <ambientLight intensity={0.85} />
+      <ModelErrorBoundary fallback={portraitFallback}>
+        <Canvas
+          dpr={[1, 1.5]}
+          camera={{
+            position: [0, compact ? 0.02 : 0.05, compact ? 2.65 : 3.2],
+            fov: compact ? 34 : 36,
+            near: 0.01,
+            far: 100,
+          }}
+          gl={{ alpha: true, antialias: true }}
+        >
+          <ambientLight intensity={0.85} />
 
-        <directionalLight
-          position={[2, 3, 4]}
-          intensity={1.35}
-          color="#fff5ff"
-        />
+          <directionalLight
+            position={[2, 3, 4]}
+            intensity={1.35}
+            color="#fff5ff"
+          />
 
-        <directionalLight
-          position={[-3, 1, -2]}
-          intensity={0.7}
-          color="#8996ff"
-        />
+          <directionalLight
+            position={[-3, 1, -2]}
+            intensity={0.7}
+            color="#8996ff"
+          />
 
-        <pointLight
-          position={[0, 1, 1.5]}
-          intensity={0.45}
-          color="#a78bfa"
-        />
+          <pointLight
+            position={[0, 1, 1.5]}
+            intensity={0.45}
+            color="#a78bfa"
+          />
 
-        {!compact && <HologramPlatform />}
+          {!compact && <HologramPlatform />}
 
-        <Suspense fallback={null}>
-          <SageRig state={state} compact={compact} />
-        </Suspense>
-      </Canvas>
+          <Suspense fallback={portraitFallback}>
+            <SageRig state={state} compact={compact} />
+          </Suspense>
+        </Canvas>
+      </ModelErrorBoundary>
     </div>
   );
 }
