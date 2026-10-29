@@ -1,3 +1,4 @@
+
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -27,12 +28,49 @@ function SageRig({
 }) {
   const { scene, animations } = useGLTF(MODEL_URL);
 
-  // Preserve the original GLB materials and textures.
-  // Do not forcibly change opacity, emissive color or transparency.
-  const model = useMemo(
-    () => cloneSkeleton(scene) as THREE.Group,
-    [scene]
-  );
+  const model = useMemo(() => {
+    const copy = cloneSkeleton(scene) as THREE.Group;
+
+    copy.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+
+      if (!mesh.isMesh) return;
+
+      const makeSolid = (
+        source: THREE.Material
+      ): THREE.Material => {
+        const material = source.clone();
+
+        // The current model looks ghost-like because its materials
+        // are translucent. Preserve its textures and base colors,
+        // but render the character surfaces as solid.
+        material.transparent = false;
+        material.opacity = 1;
+        material.depthWrite = true;
+        material.blending = THREE.NormalBlending;
+        material.needsUpdate = true;
+
+        // Limit excessive surface glow so the textures remain visible.
+        if (material instanceof THREE.MeshStandardMaterial) {
+          material.emissiveIntensity = Math.min(
+            material.emissiveIntensity,
+            0.35
+          );
+        }
+
+        return material;
+      };
+
+      mesh.material = Array.isArray(mesh.material)
+        ? mesh.material.map(makeSolid)
+        : makeSolid(mesh.material);
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+
+    return copy;
+  }, [scene]);
 
   const framing = useMemo(() => {
     model.updateMatrixWorld(true);
@@ -69,8 +107,12 @@ function SageRig({
     const wanted = normalizeClipName(requested);
 
     const clipName =
-      names.find((name) => normalizeClipName(name) === wanted) ??
-      names.find((name) => normalizeClipName(name) === "idle") ??
+      names.find(
+        (name) => normalizeClipName(name) === wanted
+      ) ??
+      names.find(
+        (name) => normalizeClipName(name) === "idle"
+      ) ??
       names[0];
 
     const next = clipName ? actions[clipName] : undefined;
@@ -213,23 +255,23 @@ export default function Sage3DCharacter({
         }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={0.75} />
+        <ambientLight intensity={0.85} />
 
         <directionalLight
           position={[2, 3, 4]}
-          intensity={1.2}
+          intensity={1.35}
           color="#fff5ff"
         />
 
         <directionalLight
           position={[-3, 1, -2]}
-          intensity={0.65}
+          intensity={0.7}
           color="#8996ff"
         />
 
         <pointLight
           position={[0, 1, 1.5]}
-          intensity={0.4}
+          intensity={0.45}
           color="#a78bfa"
         />
 
