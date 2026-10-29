@@ -164,8 +164,8 @@ function expressionForReply(
 }
 
 /**
- * All three saved character artworks are displayed together.
- * Selecting one switches the conversation persona.
+ * Displays Sage, Nova, and Atlas together.
+ * Selecting a card changes the active conversation persona.
  */
 function WelcomeTrioScene({
   selectedPersonaId,
@@ -850,6 +850,14 @@ function App() {
     setIsThinking(false);
     setChatError("");
     setActiveNav("chat");
+
+    setAvatarExpression(
+      conversation.persona === "nova"
+        ? "curious"
+        : conversation.persona === "atlas"
+          ? "focused"
+          : "neutral"
+    );
 
     try {
       const savedMessages = await loadConversationMessages(
@@ -1587,23 +1595,18 @@ function App() {
                 }}
               >
                 {selectedPersonaId === "sage" ? (
-                  <Sage3DCharacter state={avatarState} compact />
+                  <Sage3DCharacter
+                    state={avatarState}
+                    compact
+                  />
                 ) : (
-                  <img
-                    className="selected-persona-portrait"
-                    src={`/personas/${selectedPersonaId}.png`}
-                    alt={`Echo ${selectedPersona.name}`}
-                    loading="eager"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "block",
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      objectPosition: "center top",
-                      borderRadius: 12,
-                    }}
+                  <EchoAvatar
+                    state={avatarState}
+                    size="panel"
+                    persona={selectedPersonaId}
+                    expression={avatarExpression}
+                    mouthOpen={mouthOpen}
+                    label={`Echo ${selectedPersona.name}`}
                   />
                 )}
               </div>
