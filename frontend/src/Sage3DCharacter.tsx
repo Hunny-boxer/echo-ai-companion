@@ -1,4 +1,3 @@
-
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -8,7 +7,7 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.j
 
 import type { EchoAvatarState } from "./EchoAvatar";
 
-const MODEL_URL = "/models/sage-rigged-animated%20(2).glb";
+const MODEL_URL = "/models/sage-rigged-animated-balanced.glb";
 
 type Sage3DCharacterProps = {
   state?: EchoAvatarState;
@@ -17,42 +16,6 @@ type Sage3DCharacterProps = {
 
 function normalizeClipName(name: string): string {
   return name.toLowerCase().replace(/[^a-z]/g, "");
-}
-
-function makeOpaqueMaterial(source: THREE.Material): THREE.Material {
-  const material = source.clone();
-
-  material.transparent = false;
-  material.opacity = 1;
-  material.depthWrite = true;
-  material.blending = THREE.NormalBlending;
-  material.alphaTest = 0;
-
-  // Disable glass-like transmission while retaining the material's
-  // original base color, texture, roughness and metallic properties.
-  if (material instanceof THREE.MeshPhysicalMaterial) {
-    material.transmission = 0;
-    material.thickness = 0;
-  }
-
-  // Some GLB textures contain alpha values even when the material
-  // is marked opaque. Preserve their RGB color data but ignore the
-  // base-color texture's alpha channel.
-  const previousCompile = material.onBeforeCompile.bind(material);
-
-  material.onBeforeCompile = (shader, renderer) => {
-    previousCompile(shader, renderer);
-
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "diffuseColor *= sampledDiffuseColor;",
-      "diffuseColor.rgb *= sampledDiffuseColor.rgb;"
-    );
-  };
-
-  material.customProgramCacheKey = () => "echo-sage-opaque-v1";
-  material.needsUpdate = true;
-
-  return material;
 }
 
 function SageRig({
@@ -69,12 +32,25 @@ function SageRig({
 
     copy.traverse((object) => {
       const mesh = object as THREE.Mesh;
-
       if (!mesh.isMesh) return;
 
+      const prepareMaterial = (source: THREE.Material) => {
+        const material = source.clone();
+
+        // The repaired GLB already defines opaque materials.
+        // Preserve the original textures and corrected surface settings.
+        material.transparent = false;
+        material.opacity = 1;
+        material.depthWrite = true;
+        material.blending = THREE.NormalBlending;
+        material.needsUpdate = true;
+
+        return material;
+      };
+
       mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(makeOpaqueMaterial)
-        : makeOpaqueMaterial(mesh.material);
+        ? mesh.material.map(prepareMaterial)
+        : prepareMaterial(mesh.material);
 
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -104,7 +80,6 @@ function SageRig({
   }, [model, compact]);
 
   const { actions, names } = useAnimations(animations, model);
-
   const activeAction = useRef<THREE.AnimationAction | null>(null);
   const root = useRef<THREE.Group | null>(null);
 
