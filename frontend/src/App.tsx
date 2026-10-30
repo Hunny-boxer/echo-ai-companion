@@ -1804,6 +1804,8 @@ function App() {
                   <Sage3DCharacter
                     state={avatarState}
                     compact
+                    mouthOpen={mouthOpen}
+                    expression={avatarExpression}
                   />
                 ) : (
                   <EchoAvatar
