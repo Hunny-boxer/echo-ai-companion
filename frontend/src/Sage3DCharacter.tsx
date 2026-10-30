@@ -1,4 +1,3 @@
-
 import {
   Component,
   Suspense,
@@ -303,14 +302,16 @@ function SageRig({
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
 
-    const targetHeight = compact ? 1.42 : 1.85;
+    // The compact companion card uses a tighter upper-body portrait crop.
+    // The standalone view keeps the original full-character framing.
+    const targetHeight = compact ? 2.0 : 1.85;
     const scale = targetHeight / Math.max(size.y, 0.001);
 
     return {
       scale,
       position: new THREE.Vector3(
         -center.x * scale,
-        -center.y * scale,
+        -center.y * scale - (compact ? 0.25 : 0),
         -center.z * scale
       ),
     };
@@ -425,10 +426,8 @@ function SageRig({
       );
     }
 
-    /*
-     * The existing browser speech controller already updates mouthOpen.
-     * Until it is passed from App.tsx, speaking uses a gentle fallback.
-     */
+    // App.tsx feeds the browser speech controller's live mouthOpen value.
+    // Facial movement is applied only when the model exposes matching morphs.
     const safeMouthOpen =
       state !== "speaking"
         ? 0
@@ -559,7 +558,7 @@ export default function Sage3DCharacter({
         <Canvas
           dpr={[1, 1.5]}
           camera={{
-            position: [0, compact ? 0.02 : 0.05, compact ? 2.65 : 3.2],
+            position: [0, compact ? 0.02 : 0.05, compact ? 2.35 : 3.2],
             fov: compact ? 34 : 36,
             near: 0.01,
             far: 100,
