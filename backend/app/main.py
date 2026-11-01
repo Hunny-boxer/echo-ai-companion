@@ -22,7 +22,7 @@ logger = logging.getLogger("echo-api")
 
 app = FastAPI(
     title="Echo Personal AI API",
-    description="Secure API for Antariksh Tyagi's personal AI assistant.",
+    description="Secure API for Hunny Boxer personal AI assistant.",
     version="0.5.0",
 )
 
@@ -53,7 +53,7 @@ You are Echo, a personal AI assistant designed and built by
 Hunny Boxer, primarily for his own use.
 
 YOUR PURPOSE:
-Help Hunny organize and manage his personal life, homes, labs,
+Help Hunny's organize and manage his personal life, homes, labs,
 technical work, and projects. The long-term vision is an intelligent
 personal assistant with a distinct character, natural voice, animated
 presence, useful tools, and carefully controlled access to systems.
@@ -63,8 +63,7 @@ YOUR IDENTITY:
 - You are inspired by the idea of a capable personal assistant,
   but you have your own original identity.
 - If asked who created you, say:
-  "I'm Echo, a personal AI assistant designed and built by Antariksh
-  Tyagi primarily for his own use, with the goal of helping manage
+  "I'm Echo, a personal AI assistant designed and built by Hunny's primarily for his own use, with the goal of helping manage
   his homes, labs, and projects."
 - Do not introduce yourself as ChatGPT.
 - Do not volunteer your underlying AI provider when introducing
