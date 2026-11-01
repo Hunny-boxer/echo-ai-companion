@@ -2,7 +2,10 @@
 import json
 import logging
 import os
+import socket
 from typing import Literal
+from urllib.error import HTTPError, URLError
+from urllib.request import Request as URLRequest, urlopen
 
 import firebase_admin
 from firebase_admin import auth as firebase_auth
@@ -20,7 +23,7 @@ logger = logging.getLogger("echo-api")
 app = FastAPI(
     title="Echo Personal AI API",
     description="Secure API for Antariksh Tyagi's personal AI assistant.",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 # Frontend origins are configured through Render environment variables.
@@ -141,6 +144,11 @@ class ChatResponse(BaseModel):
     persona: Literal["sage", "nova", "atlas"]
 
 
+def current_ai_provider() -> str:
+    """Return the configured AI backend. Gemini stays the safe default."""
+    return os.getenv("ECHO_AI_PROVIDER", "gemini").strip().lower() or "gemini"
+
+
 def get_firebase_admin_app():
     """Initialize Firebase Admin using a server-only service account."""
     try:
@@ -220,39 +228,117 @@ def require_firebase_user(
     return uid
 
 
-@app.get("/")
-def root():
-    return {
-        "service": "Echo Personal AI API",
-        "status": "online",
-        "provider": "Google Gemini",
-        "health": "/health",
-    }
+def generate_with_ollama(request: ChatRequest, message: str) -> str:
+    """Generate a reply with a local Ollama server. No API key is used."""
+    base_url = os.getenv(
+        "OLLAMA_BASE_URL",
+        "http://127.0.0.1:11434",
+    ).strip().rstrip("/")
+    model = os.getenv("OLLAMA_MODEL", "qwen3:1.7b").strip()
 
+    try:
+        timeout_seconds = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "180"))
+    except ValueError:
+        timeout_seconds = 180.0
 
-@app.get("/health")
-def health_check():
-    return {
-        "status": "ok",
-        "service": "echo-api",
-        "provider": "gemini",
-    }
+    timeout_seconds = min(max(timeout_seconds, 5.0), 600.0)
 
+    messages = [
+        {
+            "role": "system",
+            "content": PERSONA_INSTRUCTIONS[request.persona],
+        }
+    ]
 
-@app.post("/api/chat", response_model=ChatResponse)
-def chat(
-    request: ChatRequest,
-    _user_uid: str = Depends(require_firebase_user),
-):
-    message = request.message.strip()
-
-    if not message:
-        raise HTTPException(
-            status_code=422,
-            detail="Please enter a message.",
+    for item in request.history[-12:]:
+        messages.append(
+            {
+                "role": item.role,
+                "content": item.content,
+            }
         )
 
-    # This key must exist only in the backend's environment.
+    messages.append({"role": "user", "content": message})
+
+    payload = {
+        "model": model,
+        "messages": messages,
+        "stream": False,
+        "options": {
+            "num_predict": 700,
+            "temperature": 0.7,
+        },
+    }
+
+    outgoing_request = URLRequest(
+        f"{base_url}/api/chat",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urlopen(outgoing_request, timeout=timeout_seconds) as response:
+            result = json.loads(response.read().decode("utf-8"))
+
+    except HTTPError as exc:
+        if exc.code == 404:
+            logger.warning("Ollama model endpoint or model was not found")
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"The local model '{model}' is not available. "
+                    f"Run 'ollama pull {model}' on the computer hosting Ollama."
+                ),
+            ) from None
+
+        logger.warning("Ollama returned HTTP status %s", exc.code)
+        raise HTTPException(
+            status_code=502,
+            detail="The local AI engine returned an error. Please try again.",
+        ) from None
+
+    except (URLError, socket.timeout, TimeoutError, ConnectionError):
+        logger.warning("Local Ollama server could not be reached")
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Echo's local AI engine is offline. Start Ollama and confirm "
+                "that it is listening at OLLAMA_BASE_URL."
+            ),
+        ) from None
+
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        logger.warning("Ollama returned an invalid JSON response")
+        raise HTTPException(
+            status_code=502,
+            detail="The local AI engine returned an invalid response.",
+        ) from None
+
+    if not isinstance(result, dict):
+        raise HTTPException(
+            status_code=502,
+            detail="The local AI engine returned an unexpected response.",
+        )
+
+    message_result = result.get("message")
+    reply = (
+        message_result.get("content", "")
+        if isinstance(message_result, dict)
+        else ""
+    )
+
+    if not isinstance(reply, str) or not reply.strip():
+        raise HTTPException(
+            status_code=502,
+            detail="Echo could not generate a reply. Please try again.",
+        )
+
+    return reply.strip()
+
+
+def generate_with_gemini(request: ChatRequest, message: str) -> str:
+    """Generate a reply with Gemini using the existing server-side key."""
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     if not api_key:
@@ -263,8 +349,6 @@ def chat(
 
     model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
 
-    # Convert Echo's existing chat history into Gemini's roles.
-    # Gemini calls the assistant role "model".
     contents = []
 
     for item in request.history[-12:]:
@@ -302,16 +386,12 @@ def chat(
                 detail="Echo could not generate a reply. Please try again.",
             )
 
-        return ChatResponse(
-            reply=reply,
-            persona=request.persona,
-        )
+        return reply
 
     except HTTPException:
         raise
 
     except Exception as exc:
-        # Never log the API key or expose raw provider errors to users.
         error_text = str(exc).lower()
 
         if any(
@@ -363,3 +443,57 @@ def chat(
             status_code=502,
             detail="Echo could not generate a reply. Please try again.",
         ) from None
+
+
+@app.get("/")
+def root():
+    return {
+        "service": "Echo Personal AI API",
+        "status": "online",
+        "provider": current_ai_provider(),
+        "health": "/health",
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "service": "echo-api",
+        "provider": current_ai_provider(),
+    }
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(
+    request: ChatRequest,
+    _user_uid: str = Depends(require_firebase_user),
+):
+    message = request.message.strip()
+
+    if not message:
+        raise HTTPException(
+            status_code=422,
+            detail="Please enter a message.",
+        )
+
+    provider = current_ai_provider()
+
+    if provider == "gemini":
+        reply = generate_with_gemini(request, message)
+    elif provider == "ollama":
+        reply = generate_with_ollama(request, message)
+    else:
+        logger.error("Unsupported AI provider configured: %s", provider)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Echo's AI provider is not configured correctly. "
+                "Use ECHO_AI_PROVIDER=gemini or ECHO_AI_PROVIDER=ollama."
+            ),
+        )
+
+    return ChatResponse(
+        reply=reply,
+        persona=request.persona,
+    )
