@@ -1,3 +1,4 @@
+
 name: Echo Backend CI
 
 on:
@@ -43,8 +44,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Check Python syntax
-        run: python -m compileall -q app
+        run: python -m compileall -q app tests
 
       - name: Verify API loads
         run: |
           python -c "from app.main import app; print(f'Loaded {app.title} with {len(app.routes)} routes')"
+
+      - name: Run AI provider tests
+        run: python -m unittest discover -s tests -v
