@@ -1834,7 +1834,7 @@ function App() {
                 <p>{selectedPersona.role}</p>
 
                 <p className="feature-creator">
-                  Designed by Antariksh Tyagi
+                  Designed by Hunny Boxer
                 </p>
               </div>
 
