@@ -17,6 +17,12 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
+from .memory import (
+    append_memory_context,
+    create_memory_router,
+    retrieve_relevant_memories,
+)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("echo-api")
 
@@ -40,7 +46,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -185,7 +191,7 @@ def require_firebase_user(
         bearer_scheme
     ),
 ) -> str:
-    """Verify the Firebase ID token before allowing chat requests."""
+    """Verify the Firebase ID token before allowing API access."""
     if (
         credentials_header is None
         or credentials_header.scheme.lower() != "bearer"
@@ -227,7 +233,20 @@ def require_firebase_user(
     return uid
 
 
-def generate_with_ollama(request: ChatRequest, message: str) -> str:
+# Register the authenticated, user-scoped Memory API.
+app.include_router(
+    create_memory_router(
+        require_firebase_user=require_firebase_user,
+        get_firebase_admin_app=get_firebase_admin_app,
+    )
+)
+
+
+def generate_with_ollama(
+    request: ChatRequest,
+    message: str,
+    system_instruction: str | None = None,
+) -> str:
     """Generate a reply with a local Ollama server. No API key is used."""
     base_url = os.getenv(
         "OLLAMA_BASE_URL",
@@ -245,7 +264,10 @@ def generate_with_ollama(request: ChatRequest, message: str) -> str:
     messages = [
         {
             "role": "system",
-            "content": PERSONA_INSTRUCTIONS[request.persona],
+            "content": (
+                system_instruction
+                or PERSONA_INSTRUCTIONS[request.persona]
+            ),
         }
     ]
 
@@ -336,7 +358,11 @@ def generate_with_ollama(request: ChatRequest, message: str) -> str:
     return reply.strip()
 
 
-def generate_with_gemini(request: ChatRequest, message: str) -> str:
+def generate_with_gemini(
+    request: ChatRequest,
+    message: str,
+    system_instruction: str | None = None,
+) -> str:
     """Generate a reply with Gemini using the existing server-side key."""
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
@@ -372,7 +398,10 @@ def generate_with_gemini(request: ChatRequest, message: str) -> str:
             model=model,
             contents=contents,
             config=types.GenerateContentConfig(
-                system_instruction=PERSONA_INSTRUCTIONS[request.persona],
+                system_instruction=(
+                    system_instruction
+                    or PERSONA_INSTRUCTIONS[request.persona]
+                ),
                 max_output_tokens=700,
             ),
         )
@@ -444,6 +473,43 @@ def generate_with_gemini(request: ChatRequest, message: str) -> str:
         ) from None
 
 
+def build_memory_instruction(
+    user_uid: str,
+    request: ChatRequest,
+    message: str,
+) -> str | None:
+    """Retrieve relevant explicitly saved memories for this user."""
+    recent_user_context = [
+        item.content
+        for item in request.history[-4:]
+        if item.role == "user"
+    ]
+    memory_query = "\n".join(recent_user_context + [message])
+
+    try:
+        memories = retrieve_relevant_memories(
+            user_uid=user_uid,
+            query_text=memory_query,
+            get_firebase_admin_app=get_firebase_admin_app,
+            max_results=5,
+        )
+    except Exception as exc:
+        # Memory failure must not take down normal AI chat.
+        logger.warning(
+            "Saved memory retrieval failed: %s",
+            type(exc).__name__,
+        )
+        return None
+
+    if not memories:
+        return None
+
+    return append_memory_context(
+        PERSONA_INSTRUCTIONS[request.persona],
+        memories,
+    )
+
+
 @app.get("/")
 def root():
     return {
@@ -478,10 +544,32 @@ def chat(
 
     provider = current_ai_provider()
 
+    system_instruction = build_memory_instruction(
+        user_uid=_user_uid,
+        request=request,
+        message=message,
+    )
+
     if provider == "gemini":
-        reply = generate_with_gemini(request, message)
+        if system_instruction:
+            reply = generate_with_gemini(
+                request,
+                message,
+                system_instruction,
+            )
+        else:
+            reply = generate_with_gemini(request, message)
+
     elif provider == "ollama":
-        reply = generate_with_ollama(request, message)
+        if system_instruction:
+            reply = generate_with_ollama(
+                request,
+                message,
+                system_instruction,
+            )
+        else:
+            reply = generate_with_ollama(request, message)
+
     else:
         logger.error("Unsupported AI provider configured: %s", provider)
         raise HTTPException(
