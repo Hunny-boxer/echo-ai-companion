@@ -13,6 +13,7 @@ import EchoAvatar, {
 } from "./EchoAvatar";
 import Sage3DCharacter from "./Sage3DCharacter";
 import { sendChatMessage } from "./chatService";
+import MemoryManager from "./MemoryManager";
 import {
   createConversation,
   listConversations,
@@ -1041,6 +1042,12 @@ function App() {
     setActiveNav("chat");
   }
 
+  function openMemoryManager() {
+    stopVoiceSession();
+    setChatError("");
+    setActiveNav("memory");
+  }
+
   async function openConversation(
     conversation: SavedConversation
   ) {
@@ -1321,12 +1328,11 @@ function App() {
             className={`nav-link ${
               activeNav === "memory" ? "nav-link-active" : ""
             }`}
-            onClick={() => setActiveNav("memory")}
+            onClick={openMemoryManager}
             type="button"
           >
             <span className="nav-icon">♡</span>
             <span>My memories</span>
-            <span className="soon-label">Soon</span>
           </button>
 
           <button
@@ -1417,8 +1423,8 @@ function App() {
           <div>
             <strong>Your space, your rules</strong>
             <p>
-              Conversations are saved to your signed-in account.
-              Memory controls are coming next.
+              You control what Echo remembers. Review, edit, or delete
+              your saved memories whenever you like.
             </p>
           </div>
         </div>
@@ -1439,7 +1445,9 @@ function App() {
             <div className="breadcrumb">
               <span>Echo</span>
               <span className="breadcrumb-slash">/</span>
-              <strong>Companion</strong>
+              <strong>
+                {activeNav === "memory" ? "My memories" : "Companion"}
+              </strong>
             </div>
 
             <div className="preview-pill">
@@ -1488,6 +1496,11 @@ function App() {
 
         <div className="content-grid">
           <section className="chat-column">
+            {activeNav === "memory" ? (
+              <MemoryManager />
+            ) : (
+              <>
+
             {messages.length === 0 ? (
               <div
                 className={`chat-welcome welcome-persona-${selectedPersonaId}`}
@@ -1769,6 +1782,8 @@ function App() {
                 </span>
               </div>
             </div>
+              </>
+            )}
           </section>
 
           <aside className="companion-panel">
@@ -1905,19 +1920,21 @@ function App() {
               <p>{selectedPersona.description}</p>
             </div>
 
-            <div className="memory-card">
-              <div className="memory-card-icon">⌘</div>
+            <button
+              className="memory-card"
+              type="button"
+              onClick={openMemoryManager}
+            >
+              <span className="memory-card-icon">⌘</span>
 
-              <div className="memory-card-copy">
+              <span className="memory-card-copy">
                 <strong>Memory, your way</strong>
-
                 <p>
                   Choose what Echo remembers and delete it whenever you like.
                 </p>
-
-                <span>PERSONAL MEMORY IS COMING NEXT</span>
-              </div>
-            </div>
+                <span>OPEN MEMORY MANAGER ↗</span>
+              </span>
+            </button>
 
             <div className="panel-footer">
               <span className="panel-footer-spark">✦</span>
