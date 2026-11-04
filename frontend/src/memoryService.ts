@@ -20,10 +20,6 @@ type MemoryPayload = {
   category: MemoryCategory;
 };
 
-type ApiError = {
-  detail?: unknown;
-};
-
 async function memoryRequest<T>(
   path: string,
   options: RequestInit = {}
@@ -65,15 +61,19 @@ async function memoryRequest<T>(
     );
   }
 
-  const data = (await response.json().catch(() => ({}))) as
-    | T
-    | ApiError;
+  const data: unknown = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const detail =
-      "detail" in data && typeof data.detail === "string"
-        ? data.detail
-        : "";
+    let detail = "";
+
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "detail" in data &&
+      typeof data.detail === "string"
+    ) {
+      detail = data.detail;
+    }
 
     throw new Error(
       detail ||
