@@ -1,0 +1,535 @@
+
+.memory-manager {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  flex: 1;
+  flex-direction: column;
+  align-self: center;
+  gap: 17px;
+  padding: 6px 0 22px;
+  animation: memory-manager-enter 320ms ease both;
+}
+
+@keyframes memory-manager-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memory-manager-header,
+.memory-manager-section-heading,
+.memory-manager-list-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.memory-manager-header {
+  padding: 9px 0 3px;
+}
+
+.memory-manager-eyebrow,
+.memory-manager-section-kicker {
+  color: #b6a0ff;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.6px;
+}
+
+.memory-manager-header h1 {
+  margin: 7px 0 8px;
+  color: #f0eafa;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 700;
+  letter-spacing: -1.1px;
+}
+
+.memory-manager-header p {
+  max-width: 560px;
+  margin: 0;
+  color: #a69db6;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.memory-manager-total {
+  display: flex;
+  min-width: 66px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 13px;
+  border: 1px solid rgba(190, 169, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(155, 123, 234, 0.08);
+}
+
+.memory-manager-total strong {
+  color: #e8dcff;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.memory-manager-total span {
+  color: #a69bb9;
+  font-size: 9px;
+}
+
+.memory-manager-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(139, 224, 189, 0.14);
+  border-radius: 12px;
+  background: rgba(83, 177, 139, 0.055);
+}
+
+.memory-manager-privacy-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border: 1px solid rgba(139, 224, 189, 0.2);
+  border-radius: 9px;
+  color: #8be0bd;
+  font-size: 18px;
+}
+
+.memory-manager-privacy strong {
+  color: #c8f1df;
+  font-size: 11px;
+}
+
+.memory-manager-privacy p {
+  margin: 4px 0 0;
+  color: #9caaab;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.memory-manager-create {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 17px;
+  border: 1px solid var(--border-strong);
+  border-radius: 15px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(155, 123, 234, 0.09),
+      transparent 48%
+    ),
+    rgba(20, 17, 30, 0.82);
+}
+
+.memory-manager-section-heading {
+  align-items: center;
+}
+
+.memory-manager-section-heading h2,
+.memory-manager-list-heading h2 {
+  margin: 5px 0 0;
+  color: #e8e1f2;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.35px;
+}
+
+.memory-manager-spark {
+  color: #b6a0ff;
+  font-size: 23px;
+}
+
+.memory-manager-create form,
+.memory-manager-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.memory-manager-label {
+  color: #c7bed5;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.memory-manager-textarea {
+  display: block;
+  width: 100%;
+  min-height: 85px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid rgba(204, 184, 255, 0.15);
+  border-radius: 10px;
+  outline: none;
+  color: #eeeaf7;
+  background: rgba(8, 7, 13, 0.5);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.65;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.memory-manager-textarea::placeholder {
+  color: #777084;
+}
+
+.memory-manager-textarea:focus {
+  border-color: rgba(182, 160, 255, 0.65);
+  box-shadow: 0 0 0 3px rgba(153, 118, 243, 0.1);
+}
+
+.memory-manager-form-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 3px;
+}
+
+.memory-manager-field {
+  display: flex;
+  min-width: 125px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memory-manager-select {
+  min-height: 36px;
+  padding: 0 30px 0 10px;
+  border: 1px solid rgba(204, 184, 255, 0.15);
+  border-radius: 9px;
+  outline: none;
+  color: #e8e1f2;
+  background: #191525;
+  font: inherit;
+  font-size: 10px;
+}
+
+.memory-manager-select:focus {
+  border-color: rgba(182, 160, 255, 0.65);
+}
+
+.memory-manager-select option {
+  color: #eeeaf7;
+  background: #191525;
+}
+
+.memory-manager-save-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.memory-manager-character-count {
+  color: #81788f;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.memory-manager-primary-button,
+.memory-manager-secondary-button,
+.memory-manager-delete-button,
+.memory-manager-refresh {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  transition:
+    transform 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.memory-manager-primary-button {
+  border-color: rgba(190, 169, 255, 0.24);
+  color: #fff;
+  background: linear-gradient(135deg, #9c7ae9, #7656c8);
+  box-shadow: 0 4px 15px rgba(124, 88, 202, 0.17);
+}
+
+.memory-manager-primary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #ad91f4, #8566d6);
+}
+
+.memory-manager-secondary-button,
+.memory-manager-refresh {
+  border-color: rgba(204, 184, 255, 0.15);
+  color: #c4bad5;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.memory-manager-secondary-button:hover:not(:disabled),
+.memory-manager-refresh:hover:not(:disabled) {
+  border-color: rgba(204, 184, 255, 0.32);
+  color: #f0eafa;
+  background: rgba(184, 163, 255, 0.07);
+}
+
+.memory-manager-delete-button {
+  border-color: rgba(255, 139, 157, 0.13);
+  color: #eaa1ae;
+  background: rgba(255, 110, 137, 0.045);
+}
+
+.memory-manager-delete-button:hover:not(:disabled) {
+  border-color: rgba(255, 139, 157, 0.35);
+  background: rgba(255, 110, 137, 0.1);
+}
+
+.memory-manager-primary-button:disabled,
+.memory-manager-secondary-button:disabled,
+.memory-manager-delete-button:disabled,
+.memory-manager-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.memory-manager-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.memory-manager-alert-error {
+  border: 1px solid rgba(255, 139, 157, 0.2);
+  color: #ffc1cb;
+  background: rgba(255, 110, 137, 0.07);
+}
+
+.memory-manager-alert-error button {
+  border: 0;
+  color: #ffd5dc;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.memory-manager-alert-success {
+  border: 1px solid rgba(139, 224, 189, 0.16);
+  color: #b9ecd7;
+  background: rgba(83, 177, 139, 0.06);
+}
+
+.memory-manager-list-section {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memory-manager-list-heading {
+  align-items: center;
+}
+
+.memory-manager-list {
+  display: grid;
+  gap: 10px;
+}
+
+.memory-manager-item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid rgba(204, 184, 255, 0.11);
+  border-radius: 12px;
+  background: rgba(20, 17, 30, 0.7);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.memory-manager-item:hover {
+  border-color: rgba(204, 184, 255, 0.22);
+  background: rgba(25, 21, 37, 0.86);
+}
+
+.memory-manager-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.memory-manager-category {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid rgba(182, 160, 255, 0.15);
+  border-radius: 20px;
+  color: #c9b8f9;
+  background: rgba(153, 118, 243, 0.08);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.memory-category-preference {
+  border-color: rgba(255, 180, 125, 0.18);
+  color: #efbd98;
+  background: rgba(255, 160, 103, 0.06);
+}
+
+.memory-category-work {
+  border-color: rgba(105, 174, 255, 0.18);
+  color: #a8ceff;
+  background: rgba(92, 156, 255, 0.06);
+}
+
+.memory-category-other {
+  border-color: rgba(139, 224, 189, 0.17);
+  color: #a9e5cc;
+  background: rgba(83, 177, 139, 0.055);
+}
+
+.memory-manager-date {
+  color: #82798f;
+  font-size: 9px;
+}
+
+.memory-manager-item-content {
+  margin: 0;
+  color: #e1dbea;
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.memory-manager-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.memory-manager-empty {
+  display: flex;
+  min-height: 155px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 25px 15px;
+  border: 1px dashed rgba(204, 184, 255, 0.18);
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(20, 17, 30, 0.36);
+}
+
+.memory-manager-empty-icon {
+  color: #b6a0ff;
+  font-size: 27px;
+}
+
+.memory-manager-empty strong {
+  color: #e5ddef;
+  font-size: 12px;
+}
+
+.memory-manager-empty p {
+  max-width: 340px;
+  margin: 0;
+  color: #958ba4;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+@media (max-width: 1020px) {
+  .memory-manager {
+    max-width: 760px;
+  }
+}
+
+@media (max-width: 600px) {
+  .memory-manager {
+    gap: 13px;
+    padding-top: 2px;
+  }
+
+  .memory-manager-header h1 {
+    font-size: 25px;
+  }
+
+  .memory-manager-header p {
+    font-size: 10px;
+  }
+
+  .memory-manager-total {
+    min-width: 54px;
+    padding: 8px 10px;
+  }
+
+  .memory-manager-create {
+    padding: 13px;
+  }
+
+  .memory-manager-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .memory-manager-field {
+    width: 100%;
+  }
+
+  .memory-manager-select {
+    width: 100%;
+  }
+
+  .memory-manager-save-area {
+    justify-content: space-between;
+  }
+
+  .memory-manager-privacy {
+    padding: 11px;
+  }
+
+  .memory-manager-item {
+    padding: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-manager {
+    animation: none;
+  }
+
+  .memory-manager-item,
+  .memory-manager-primary-button,
+  .memory-manager-secondary-button,
+  .memory-manager-delete-button,
+  .memory-manager-refresh {
+    transition: none;
+  }
+}
