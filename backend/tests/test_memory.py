@@ -151,7 +151,10 @@ class MemoryRankingTests(unittest.TestCase):
 class MemoryFreshnessTests(unittest.TestCase):
 
     def test_each_retrieval_reads_current_firestore_records(self):
-        """A later chat must see edited or deleted memory records."""
+        """
+        Verify that separate retrievals see the current Firestore
+        records after an edit and after a deletion.
+        """
 
         def make_snapshot(content):
             return SimpleNamespace(
@@ -181,10 +184,14 @@ class MemoryFreshnessTests(unittest.TestCase):
         user_document.collection.return_value = memory_collection
         memory_collection.limit.return_value = memory_query
 
-        # Simulate Firestore returning the original record, then
-        # the edited record, and finally no record after deletion.
+        # Four independent reads:
+        # 1. Original memory before editing.
+        # 2. Edited memory queried with the old wording.
+        # 3. Edited memory queried with the new wording.
+        # 4. Empty collection after deletion.
         memory_query.stream.side_effect = [
             [original_memory],
+            [edited_memory],
             [edited_memory],
             [],
         ]
@@ -213,34 +220,47 @@ class MemoryFreshnessTests(unittest.TestCase):
                 get_firebase_admin_app=lambda: fake_app,
             )
 
-        # First read sees the original memory.
+            deleted_query_results = retrieve_relevant_memories(
+                user_uid="test-user",
+                query_text="brief solar sales report",
+                get_firebase_admin_app=lambda: fake_app,
+            )
+
         self.assertEqual(len(original_results), 1)
         self.assertEqual(
             original_results[0]["content"],
             "I prefer step-by-step explanations with complete code files.",
         )
 
-        # The old memory is no longer returned after its edit.
-        self.assertEqual(old_query_results, [])
+        self.assertEqual(
+            old_query_results,
+            [],
+            "The old memory wording should stop matching after editing.",
+        )
 
-        # The updated preference can now be retrieved.
         self.assertEqual(len(edited_query_results), 1)
         self.assertEqual(
             edited_query_results[0]["content"],
             "I prefer concise solar sales summaries.",
         )
 
-        self.assertEqual(memory_query.stream.call_count, 3)
+        self.assertEqual(
+            deleted_query_results,
+            [],
+            "The deleted memory must not appear in a later retrieval.",
+        )
+
+        self.assertEqual(memory_query.stream.call_count, 4)
 
 
 class MemoryIsolationTests(unittest.TestCase):
 
     def test_retrieval_uses_only_requested_users_collection(self):
         """
-        Every retrieval must use the Firebase UID passed to it.
-
-        No global memory collection is queried.
+        Verify that each retrieval uses the Firebase UID supplied
+        for that request.
         """
+
         client = Mock()
         users_collection = Mock()
 
