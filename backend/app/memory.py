@@ -48,12 +48,117 @@ _STOP_WORDS = {
 }
 
 
+# Local concept groups improve retrieval when the user phrases
+# a question differently from the wording of a saved memory.
+# This is deterministic matching, not an external embedding model.
+_CONCEPT_GROUPS = {
+    "coding": {
+        "code", "codes", "coding", "program", "programs",
+        "programming", "software", "developer", "developers",
+        "development", "engineering", "engineer", "technical", "tech",
+    },
+    "explanation": {
+        "explain", "explains", "explained", "explaining",
+        "explanation", "explanations", "describe", "describes",
+        "described", "describing", "breakdown", "breakdowns",
+        "walkthrough", "walkthroughs", "tutorial", "tutorials",
+        "guide", "guides",
+    },
+    "stepwise": {
+        "step", "steps", "stepwise", "sequential", "sequence",
+        "sequences", "ordered", "order", "process", "procedure",
+        "procedures",
+    },
+    "completeness": {
+        "complete", "completely", "full", "fully", "entire",
+        "whole", "ready", "usable", "finished",
+    },
+    "code_artifact": {
+        "file", "files", "source", "sources", "snippet", "snippets",
+        "fragment", "fragments",
+    },
+    "work": {
+        "job", "jobs", "career", "occupation", "profession",
+        "employment", "work",
+    },
+    "fitness": {
+        "fitness", "gym", "workout", "workouts", "training",
+        "exercise", "exercises", "exercising",
+    },
+    "food": {
+        "food", "foods", "diet", "diets", "meal", "meals",
+        "cuisine", "eating",
+    },
+    "location": {
+        "location", "place", "places", "city", "cities", "town",
+        "towns", "live", "lives", "living", "reside", "residing",
+        "based",
+    },
+    "hobby": {
+        "hobby", "hobbies", "pastime", "pastimes", "activity",
+        "activities", "interest", "interests",
+    },
+    "communication_style": {
+        "concise", "brief", "short", "compact", "detailed",
+        "thorough", "comprehensive", "in_depth",
+    },
+}
+
+
+_TOKEN_TO_CONCEPT = {
+    alias: concept
+    for concept, aliases in _CONCEPT_GROUPS.items()
+    for alias in aliases
+}
+
+
 def _tokens(value: str) -> set[str]:
+    """Return normalized, meaningful tokens from text."""
     return {
         token
         for token in re.findall(r"[a-z0-9]{2,}", value.casefold())
         if token not in _STOP_WORDS
     }
+
+
+def _concept_index(tokens: set[str]) -> dict[str, set[str]]:
+    """Group tokens by their local concept, retaining original words."""
+    index: dict[str, set[str]] = {}
+
+    for token in tokens:
+        concept = _TOKEN_TO_CONCEPT.get(token, token)
+        index.setdefault(concept, set()).add(token)
+
+    return index
+
+
+def _concept_match_score(
+    query_tokens: set[str],
+    content_tokens: set[str],
+) -> int:
+    """
+    Score exact words more strongly than related concept matches.
+
+    Exact shared word: 4 points.
+    Different words from the same concept: 2 points.
+    """
+    query_index = _concept_index(query_tokens)
+    content_index = _concept_index(content_tokens)
+
+    shared_concepts = query_index.keys() & content_index.keys()
+    score = 0
+
+    for concept in shared_concepts:
+        exact_words = (
+            query_index[concept] & content_index[concept]
+        )
+
+        if exact_words:
+            score += len(exact_words) * 4
+        else:
+            score += 2
+
+    return score
 
 
 def _timestamp_to_iso(value: Any) -> str | None:
@@ -87,7 +192,12 @@ def rank_memory_records(
     query_text: str,
     max_results: int = 5,
 ) -> list[dict[str, Any]]:
-    """Rank saved memories using local keyword matching."""
+    """
+    Rank saved memories with exact-word and concept-aware matching.
+
+    No external API is called. Exact wording receives a higher score,
+    while related concepts can still retrieve a relevant memory.
+    """
     query_tokens = _tokens(query_text)
 
     if not query_tokens:
@@ -102,7 +212,13 @@ def rank_memory_records(
         content_tokens = _tokens(content)
         category_tokens = _tokens(category)
 
-        score = len(query_tokens & content_tokens) * 2
+        score = _concept_match_score(
+            query_tokens,
+            content_tokens,
+        )
+
+        # A small category bonus helps with explicitly categorized
+        # work, personal, and preference memories.
         score += len(query_tokens & category_tokens)
 
         if score > 0:
