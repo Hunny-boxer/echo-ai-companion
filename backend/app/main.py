@@ -22,6 +22,10 @@ from .memory import (
     create_memory_router,
     retrieve_relevant_memories,
 )
+from .gemini_retry import (
+    generate_content_with_retries,
+    is_retryable_gemini_error,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("echo-api")
@@ -352,7 +356,7 @@ def generate_with_ollama(
     if not isinstance(reply, str) or not reply.strip():
         raise HTTPException(
             status_code=502,
-            detail="Echo could not generate a reply. Please try again.",
+            detail="The local AI engine returned an empty response.",
         )
 
     return reply.strip()
@@ -394,7 +398,8 @@ def generate_with_gemini(
     try:
         client = genai.Client(api_key=api_key)
 
-        response = client.models.generate_content(
+        response = generate_content_with_retries(
+            client.models.generate_content,
             model=model,
             contents=contents,
             config=types.GenerateContentConfig(
@@ -463,6 +468,19 @@ def generate_with_gemini(
                 ),
             ) from None
 
+        if is_retryable_gemini_error(exc):
+            logger.warning(
+                "Gemini remained temporarily unavailable after retries: %s",
+                type(exc).__name__,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Gemini is temporarily unavailable after several "
+                    "attempts. Please try again shortly."
+                ),
+            ) from None
+
         logger.warning(
             "Gemini response request failed: %s",
             type(exc).__name__,
@@ -502,7 +520,15 @@ def build_memory_instruction(
         return None
 
     if not memories:
+        logger.info(
+            "No relevant saved memories matched this chat request."
+        )
         return None
+
+    logger.info(
+        "Retrieved %d relevant saved memory item(s) for this chat request.",
+        len(memories),
+    )
 
     return append_memory_context(
         PERSONA_INSTRUCTIONS[request.persona],
